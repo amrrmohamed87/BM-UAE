@@ -1,7 +1,9 @@
+import Login from "./pages/Login";
+
 function App() {
   return (
     <>
-      <h1 className="text-center">Hello</h1>
+      <Login />
     </>
   );
 }
