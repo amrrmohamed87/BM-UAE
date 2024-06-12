@@ -1,15 +1,21 @@
+import { useState } from "react";
 import LoginInput from "@/components/LoginInput";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
-
+import logo from "../assets/logoIcon.png";
 export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   return (
     <section className="h-screen flex flex-col items-center justify-center md:flex-row md:gap-16">
       <div className="text-center md:text-left md:w-1/3">
-        <h1>LOGO + TITLE + DESCRIPTION</h1>
-        <h1>LOGO + TITLE + DESCRIPTION</h1>
-        <h1>LOGO + TITLE + DESCRIPTION</h1>
+        <div className="flex flex-col items-center">
+          <img src={logo} className="w-[200px] md:w-full mb-1" />
+          <p className="text-gray-800 mb-4 md:mb-0 px-8">
+            Reach the top with{" "}
+            <span className="text-blue-900 font-semibold">BenchMark</span>{" "}
+            <span className="text-[#81cf09] font-semibold">Innovation</span> in
+            smart way
+          </p>
+        </div>
       </div>
       <div className="w-full md:w-1/3 px-4">
         <div className="bg-white max-w-full md:max-w-[500px] mx-auto p-6 border rounded-xl shadow-md">
