@@ -2,8 +2,11 @@ import { useState } from "react";
 import LoginInput from "@/components/LoginInput";
 import { Eye, EyeOff } from "lucide-react";
 import logo from "../assets/logoIcon.png";
+import { useNavigate } from "react-router-dom";
 export function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
   return (
     <section className="h-screen flex flex-col items-center justify-center md:flex-row md:gap-16">
       <div className="text-center md:text-left md:w-1/3">
@@ -40,7 +43,12 @@ export function Login() {
                 )
               }
             />
-            <button className="w-full bg-green-500 py-2 rounded-xl text-white font-semibold transition-all duration-300 hover:bg-green-800">
+            <button
+              onClick={() => {
+                navigate("/");
+              }}
+              className="w-full bg-green-500 py-2 rounded-xl text-white font-semibold transition-all duration-300 hover:bg-green-800"
+            >
               Login
             </button>
           </form>
