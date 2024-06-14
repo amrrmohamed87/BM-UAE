@@ -2,7 +2,16 @@ import { useState, useEffect } from "react";
 import { motion, useAnimationControls } from "framer-motion";
 import logo from "../assets/logoIcon.png";
 import { NavigationLinks } from "@/data/NavigationLinks";
-import { LayoutDashboard, LogInIcon } from "lucide-react";
+import {
+  BarChart,
+  BarChart3,
+  HandCoins,
+  LayoutDashboard,
+  LogInIcon,
+  PackagePlus,
+  Pen,
+  UsersIcon,
+} from "lucide-react";
 
 const sidebarVariants = {
   close: {
@@ -77,7 +86,7 @@ export function Sidebar() {
       variants={sidebarVariants}
       initial="close"
       animate={sidebarControls}
-      className="bg-neutral-900 flex flex-col z-10 gap-20 p-5 absolute top-0 left-0 h-full shadow"
+      className="bg-white flex flex-col z-10 gap-20 p-5 absolute top-0 left-0 h-full shadow"
     >
       <div className="flex flex-row w-full justify-between place-items-center">
         <motion.img
@@ -99,7 +108,7 @@ export function Sidebar() {
             viewBox="0 0 24 24"
             strokeWidth={1}
             stroke="currentColor"
-            className="w-6 h-6 stroke-neutral-200"
+            className="w-6 h-6 stroke-blue-900"
           >
             <motion.path
               strokeLinecap="round"
@@ -115,9 +124,25 @@ export function Sidebar() {
           </svg>
         </button>
       </div>
+
       <div className="flex flex-col gap-3">
         <NavigationLinks link="/" name="Dashboard">
           <LayoutDashboard className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks link="/order-entry" name="Order Entry">
+          <Pen className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks link="/supply-chain" name="Supply Chain">
+          <BarChart3 className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks link="/create-order" name="Create Order">
+          <PackagePlus className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks link="/purchase-order" name="Purchase Order">
+          <HandCoins className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks link="/create-account" name="Users">
+          <UsersIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
         <NavigationLinks link="/login" name="Login">
           <LogInIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
