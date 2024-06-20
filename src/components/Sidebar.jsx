@@ -154,7 +154,7 @@ export function Sidebar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <CircleUserRound className="stroke-[0.75] stroke-neutral-900 min-w-8 w-8" />
+        <CircleUserRound className="stroke-[0.75] stroke-blue-900 min-w-8 w-8" />
         <p className="text-blue-900 font-semibold overflow-hidden whitespace-nowrap tracking-wide">
           {name}
         </p>
