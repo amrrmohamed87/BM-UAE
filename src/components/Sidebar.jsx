@@ -11,7 +11,23 @@ import {
   PackagePlus,
   Pen,
   UsersIcon,
+  LogOutIcon,
+  CircleUserRound,
 } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import { TbLogout2 } from "react-icons/tb";
+import { useSubmit } from "react-router-dom";
 
 const sidebarVariants = {
   close: {
@@ -59,7 +75,12 @@ const logoVariants = {
     },
   },
 };
+
 export function Sidebar() {
+  const token = localStorage.getItem("token");
+  const name = localStorage.getItem("name");
+  const submit = useSubmit();
+
   const [isOpen, setIsOpen] = useState(false);
 
   const sidebarControls = useAnimationControls();
@@ -81,12 +102,19 @@ export function Sidebar() {
   function handleOpenClose() {
     setIsOpen(!isOpen);
   }
+
+  function logoutHandler(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    submit(null, { action: "/logout", method: "post" });
+  }
+
   return (
     <motion.nav
       variants={sidebarVariants}
       initial="close"
       animate={sidebarControls}
-      className="bg-white flex flex-col z-10 gap-20 p-5 absolute top-0 left-0 h-full shadow"
+      className="bg-white flex flex-col z-10 gap-16 p-5 absolute top-0 left-0 h-full shadow"
     >
       <div className="flex flex-row w-full justify-between place-items-center">
         <motion.img
@@ -125,7 +153,14 @@ export function Sidebar() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <CircleUserRound className="stroke-[0.75] stroke-neutral-900 min-w-8 w-8" />
+        <p className="text-blue-900 font-semibold overflow-hidden whitespace-nowrap tracking-wide">
+          {name}
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3 flex-grow">
         <NavigationLinks link="/" name="Dashboard">
           <LayoutDashboard className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
@@ -144,9 +179,43 @@ export function Sidebar() {
         <NavigationLinks link="/create-account" name="Users">
           <UsersIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
-        <NavigationLinks link="/login" name="Login">
-          <LogInIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
+      </div>
+
+      <div className="flex flex-col">
+        {token && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <div className="p-1 rounded flex items-center gap-3 cursor-pointer stroke-[0.75] hover:stroke-neutral-100 stroke-neutral-400 text-neutral-400 hover:text-neutral-100 place-items-center hover:bg-blue-900 transition-color duration-300">
+                <LogOutIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+                <button className="text-inherit overflow-hidden whitespace-nowrap tracking-wide">
+                  Logout
+                </button>
+              </div>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-white w-[320px] md:w-[500px]">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently Log you
+                  out from your account.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex items-center gap-3">
+                <AlertDialogCancel className="bg-red-600 text-white mt-1 hover:bg-red-900 hover:text-white transition-all duration-300">
+                  Cancel
+                </AlertDialogCancel>
+                <form
+                  action="/logout"
+                  method="post"
+                  onClick={logoutHandler}
+                  className="bg-blue-600 rounded-md px-3 py-2 cursor-pointer hover:bg-blue-900 transition-all duration-300"
+                >
+                  <button className="text-white">Logout</button>
+                </form>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </motion.nav>
   );
