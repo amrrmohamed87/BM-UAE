@@ -1,5 +1,6 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Login from "./pages/Login";
+import { action as logoutAction } from "./pages/Logout.js";
 import Dashboard from "./pages/Dashboard";
 import RootLayout from "./root/RootLayout";
 import OrderEntry from "./pages/OrderEntry";
@@ -20,6 +21,10 @@ function App() {
         {
           path: "/",
           element: <Dashboard />,
+        },
+        {
+          path: "/logout",
+          action: logoutAction,
         },
         {
           path: "/order-entry",
