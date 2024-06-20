@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-export function NavigationLinks({ link, name, children }) {
+export function NavigationLinks({ link, name, isOpen, children }) {
   return (
     <NavLink
       to={link}
@@ -11,7 +11,7 @@ export function NavigationLinks({ link, name, children }) {
       }
     >
       {children}
-      <p className="text-inherit overflow-clip whitespace-nowrap tracking-wide">
+      <p className="text-inherit overflow-hidden whitespace-nowrap tracking-wide">
         {name}
       </p>
     </NavLink>
