@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
 
-export function NavigationLinks({ link, name, isOpen, children }) {
+export function NavigationLinks({ link, name, closeSidebar, children }) {
   return (
     <NavLink
+      onClick={closeSidebar}
       to={link}
       className={({ isActive }) =>
         isActive
