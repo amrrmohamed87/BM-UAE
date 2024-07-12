@@ -13,6 +13,8 @@ import {
   UsersIcon,
   LogOutIcon,
   CircleUserRound,
+  DollarSign,
+  BadgePlus,
 } from "lucide-react";
 
 import {
@@ -114,7 +116,7 @@ export function Sidebar() {
       variants={sidebarVariants}
       initial="close"
       animate={sidebarControls}
-      className="bg-white flex flex-col z-10 gap-16 p-5 absolute top-0 left-0 h-full shadow"
+      className="bg-white flex flex-col z-10 gap-16 p-5 fixed top-0 left-0 h-full border shadow-md"
     >
       <div className="flex flex-row w-full justify-between place-items-center">
         <motion.img
@@ -161,22 +163,70 @@ export function Sidebar() {
       </div>
 
       <div className="flex flex-col gap-3 flex-grow">
-        <NavigationLinks link="/" name="Dashboard">
+        <NavigationLinks
+          closeSidebar={() => {
+            setIsOpen(false);
+          }}
+          link="/"
+          name="Dashboard"
+        >
           <LayoutDashboard className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
-        <NavigationLinks link="/order-entry" name="Order Entry">
+        <NavigationLinks
+          closeSidebar={() => {
+            setIsOpen(false);
+          }}
+          link="/order-entry"
+          name="Order Entry"
+        >
           <Pen className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
-        <NavigationLinks link="/supply-chain" name="Supply Chain">
+        {/* <NavigationLinks link="/invoices" name="Invoices">
+          <DollarSign className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+        </NavigationLinks> */}
+        <NavigationLinks
+          closeSidebar={() => {
+            setIsOpen(false);
+          }}
+          link="/supply-chain"
+          name="Supply Chain"
+        >
           <BarChart3 className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
-        <NavigationLinks link="/create-order" name="Create Order">
+        <NavigationLinks
+          closeSidebar={() => {
+            setIsOpen(false);
+          }}
+          link="/create-order"
+          name="Create Order"
+        >
           <PackagePlus className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
-        <NavigationLinks link="/purchase-order" name="Purchase Order">
+        <NavigationLinks
+          closeSidebar={() => {
+            setIsOpen(false);
+          }}
+          link="/purchase-order"
+          name="Purchase Order"
+        >
           <HandCoins className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
-        <NavigationLinks link="/create-account" name="Users">
+        <NavigationLinks
+          closeSidebar={() => {
+            setIsOpen(false);
+          }}
+          link="/add-items"
+          name="Add Items"
+        >
+          <BadgePlus className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks
+          closeSidebar={() => {
+            setIsOpen(false);
+          }}
+          link="/create-account"
+          name="Users"
+        >
           <UsersIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks>
       </div>
