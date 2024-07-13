@@ -192,7 +192,7 @@ export function AddItems() {
         return;
       }
     }
-    loadItems();
+    //loadItems();
   }, [isAddingItems || isDeletingItem || reloadItems]);
 
   useEffect(() => {
