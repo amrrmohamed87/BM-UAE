@@ -1,10 +1,23 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import "../CSS/Select.css";
+
+import { exportToPDF, exportToExcel } from "@/utils/ExcelPDF";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import {
   AlertDialog,
@@ -32,6 +45,7 @@ import {
   Users,
   ArrowRight,
   Box,
+  Download,
 } from "lucide-react";
 
 export function PFI() {
@@ -70,6 +84,9 @@ export function PFI() {
    * 28- isLoadingRequestedPFIInfo
    * 29- reloadRequestedPFITable
    * 30 - requestTableFilter
+   * ----------------------------
+   * 31- isLoadingSinglePFI
+   * 32- updatedPFIData
    *
    */
 
@@ -134,6 +151,19 @@ export function PFI() {
   const [isDeletingPFIRequest, setIsDeletingPFIRequest] = useState(false);
 
   const [reloadRequestedPFITable, setReloadRequestedPFITable] = useState(false);
+  const [updatedPFIData, setUpdatedPFIData] = useState({
+    customerId: "",
+    itemId: "",
+    QTY: "",
+    noOfCycles: [
+      {
+        label: "",
+        SHPDate: "",
+      },
+    ],
+  });
+
+  const [isLoadingSinglePFI, setIsLoadingSinglePFI] = useState(false);
 
   /**
    * useEffect functions to Fetch Data
@@ -141,6 +171,7 @@ export function PFI() {
    * 2- Fetch items
    * 3- Fetch cyclesPerItem
    * 4- Fetch requestedPFI
+   * 5- Fetch singlePFI
    */
 
   useEffect(() => {
@@ -281,10 +312,48 @@ export function PFI() {
     loadRequestedPFI();
   }, [reloadRequestedPFITable]);
 
+  useEffect(() => {
+    async function loadSinglePFI() {
+      if (!pfiId.id) return;
+      setIsLoadingSinglePFI(true);
+
+      try {
+        const response = await fetch(
+          `https://benchmark-innovation-production.up.railway.app/api/pfi/${pfiId.id}`
+        );
+        const resData = await response.json();
+
+        if (!response.ok) {
+          toast.error(resData.message);
+          setIsLoadingSinglePFI(false);
+          return;
+        }
+
+        setUpdatedPFIData({
+          customerId: resData.Customer.customerCode,
+          itemId: resData.Items.itemName,
+          QTY: resData.QTY,
+          noOfCycles: resData.noOfCycle.map((cycle) => ({
+            label: cycle.label,
+            value: cycle.SHPDate,
+          })),
+        });
+
+        setIsLoadingSinglePFI(false);
+      } catch (error) {
+        toast.error(error.message);
+        setIsLoadingSinglePFI(false);
+        return;
+      }
+    }
+    loadSinglePFI();
+  }, [pfiId]);
+
   /**
    * Handle onChange function to update state values
    * 1- Request PFI Form
    * 2- RowsPerRequestedPFI
+   * 3- handleUpdatePFI
    */
 
   function handleRequestPFIChange(event) {
@@ -300,6 +369,14 @@ export function PFI() {
     setCurrentRequestedPFIPage(1);
   }
 
+  function handleUpdatedPFI(event) {
+    const { name, value } = event.target;
+    setUpdatedPFIData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
   /**
    * Sending Data to API
    * 1- requestPFI
@@ -309,14 +386,6 @@ export function PFI() {
   const handleRequestPFI = async (event) => {
     event.preventDefault();
     setIsrequesttingPFI(true);
-
-    /* const sumOfCyclesValues = requestPFIForm.noOfCycle.reduce(
-      (index, currentValue) => {
-        return index + currentValue;
-      },
-      0
-    );
-*/
 
     const finalData = {
       ...requestPFIForm,
@@ -512,13 +581,129 @@ export function PFI() {
    * Console log
    */
 
-  //console.log(requestPFIForm);
+  console.log(updatedPFIData.customerId);
+  console.log(cyclesPerItem);
+
+  const formatDataForExcel = () => {
+    return requestedPFI.map((item) => ({
+      "Customer Code": item.Customer.customerCode,
+      Item: item.Items.itemName,
+      "PFI - Serial": item.SERIAL,
+      QTY: item.QTY,
+      Cycles: item.noOfCycle
+        .slice()
+        .reverse()
+        .map((cycle) => cycle.label)
+        .join(", "),
+      SHPDate: item.noOfCycle
+        .slice()
+        .reverse()
+        .map((cycle) => formateDate(cycle.SHPDate))
+        .join(", "),
+    }));
+  };
+
+  const handleExportToExcel = () => {
+    exportToExcel(formatDataForExcel, "requested_PFI");
+  };
+
+  const handleExportToPDF = () => {
+    const columns = [
+      "Customer Code",
+      "Item",
+      "PFI - Serial",
+      "QTY",
+      "Cycles",
+      "SHPDate",
+    ];
+    exportToPDF(
+      requestedPFI.map((pfi) => ({
+        "Customer Code": pfi.Customer.customerCode,
+        Item: pfi.Items.itemName,
+        "PFI - Serial": pfi.SERIAL,
+        QTY: pfi.QTY,
+        Cycles: pfi.noOfCycle
+          .slice()
+          .reverse()
+          .map((cycle) => cycle.label)
+          .join(", "),
+        SHPDate: pfi.noOfCycle
+          .slice()
+          .reverse()
+          .map((cycle) => formateDate(cycle.SHPDate))
+          .join(", "),
+      })),
+      columns,
+      "requested_PFI"
+    );
+  };
 
   return (
     <>
       <div className="w-full flex flex-col gap-6 border bg-neutral-100 rounded p-4">
+        <div className="grid grid-cols-3  gap-4  p-4">
+          <div className="bg-white p-4 border shadow-md rounded-md ">
+            <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
+              <Users size={20} className="text-blue-700" /> Total Customers
+            </h1>
+            <p className="mb-3 text-neutral-900 font-semibold text-[28px]">
+              {customersList.length}
+            </p>
+            <Link
+              to="/create-account"
+              className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"
+            >
+              Manage Users <ArrowRight size={16} className="mt-1" />
+            </Link>
+          </div>
+
+          <div className="bg-white p-4 border shadow-md rounded-md ">
+            <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
+              <Box size={20} className="text-blue-700" /> Items
+            </h1>
+            <p className="mb-3 text-neutral-900 font-semibold text-[28px]">
+              {items.length}
+            </p>
+            <Link
+              to="/add-items"
+              className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"
+            >
+              Manage Items <ArrowRight size={16} className="mt-1" />
+            </Link>
+          </div>
+
+          <div className="bg-white p-4 border shadow-md rounded-md ">
+            <h1 className="flex items-center gap-1 text-[16px] mb-2 text-neutral-400">
+              <FileInput size={20} className="text-blue-700" /> Requested Orders
+            </h1>
+            <p className="mb-3 text-neutral-900 font-semibold text-[28px]">
+              {isRequesttingPFI ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1,
+                    ease: "linear",
+                  }}
+                  style={{ display: "inline-block" }}
+                >
+                  <Loader className="text-black" />
+                </motion.div>
+              ) : (
+                requestedPFI.length
+              )}
+            </p>
+            <p
+              onClick={() => setRequestTableFilter(!requestTableFilter)}
+              className="flex justify-end items-center cursor-pointer gap-1 text-blue-500 transition-all duration-300 hover:underline"
+            >
+              Search Requests <ArrowRight size={16} className="mt-1" />
+            </p>
+          </div>
+        </div>
+
         <div className="flex justify-center items-center w-full">
-          <form method="post" className="w-1/2">
+          <form method="post" className="w-2/3">
             <div className="flex flex-col bg-neutral-50 rounded shadow border p-4 w-full">
               <h1 className="mb-4 text-center text-[22px]">Create PFI</h1>
               <Select
@@ -625,12 +810,37 @@ export function PFI() {
             </button>
 
             <div className="flex items-center gap-4">
-              <button className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-green-700 text-white rounded-md transition-all duration-300 hover:bg-blue-500">
-                Export
-              </button>
-              <button className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500">
-                Import
-              </button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="flex justify-center items-center gap-1 px-10 py-2 bg-green-500 text-white rounded-md transition-all duration-300 hover:bg-green-900">
+                    DownLoad <Download size={18} />
+                  </button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Download Data</DialogTitle>
+                    <DialogDescription className="mt-2">
+                      Please select your preferred format to download the data:
+                      Excel or PDF.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <DialogFooter className="mt-4">
+                    <button
+                      onClick={handleExportToExcel}
+                      className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-emerald-700 text-white rounded-md transition-all duration-300 hover:bg-emerald-900"
+                    >
+                      Excel
+                    </button>
+                    <button
+                      onClick={handleExportToPDF}
+                      className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-red-700 text-white rounded-md transition-all duration-300 hover:bg-red-900"
+                    >
+                      PDF
+                    </button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
@@ -783,14 +993,20 @@ export function PFI() {
                       {pfi.QTY}
                     </td>
                     <td className="px-4 py-6 text-center whitespace-normal break-words text-sm font-medium text-gray-900">
-                      {pfi.noOfCycle.map((cycle) => cycle.label).join(", ")}
+                      {pfi.noOfCycle
+                        .slice()
+                        .reverse()
+                        .map((cycle) => cycle.label)
+                        .join(", ")}
                     </td>
                     <td className="px-4 py-6 text-center whitespace-normal break-words text-sm font-medium text-gray-900">
                       {pfi.noOfCycle
+                        .slice()
+                        .reverse()
                         .map((cycle) => formateDate(cycle.SHPDate))
                         .join(", ")}
                     </td>
-                    <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
+                    <td className="px-4 py-6 flex gap-2 whitespace-normal break-words text-sm font-medium text-gray-900">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <button
@@ -851,6 +1067,117 @@ export function PFI() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button
+                            onClick={() => {
+                              setPFIId({
+                                id: pfi.id,
+                              });
+                            }}
+                          >
+                            <Pen size={18} className="text-blue-500" />
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Edit PFI</DialogTitle>
+                            <DialogDescription>
+                              Make changes to your Request here. Click save when
+                              you're done.
+                            </DialogDescription>
+                          </DialogHeader>
+                          {isLoadingSinglePFI ? (
+                            <div className="flex justify-center items-center py-10">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{
+                                  repeat: Infinity,
+                                  duration: 1,
+                                  ease: "linear",
+                                }}
+                                style={{ display: "inline-block" }}
+                              >
+                                <Loader className="text-black" size={24} />
+                              </motion.div>
+                            </div>
+                          ) : (
+                            <div className="grid gap-4 py-4">
+                              <Select
+                                options={customerCodeOptions}
+                                value={customerCodeOptions.filter((option) =>
+                                  updatedPFIData.customerId.includes(
+                                    option.label
+                                  )
+                                )}
+                                name="customerId"
+                                onChange={handleUpdatedPFI}
+                                isClearable
+                                className="mb-5"
+                                placeholder="Customer Code"
+                              />
+                              <Select
+                                options={itemDescAndCodeOptions}
+                                value={itemDescAndCodeOptions.filter((option) =>
+                                  updatedPFIData.itemId.includes(option.label)
+                                )}
+                                name="itemId"
+                                onChange={(selectedOption) => {
+                                  setItemId({
+                                    id: selectedOption.value,
+                                  });
+                                  setUpdatedPFIData((prev) => ({
+                                    ...prev,
+                                    itemId: selectedOption
+                                      ? selectedOption.label
+                                      : "",
+                                  }));
+                                }}
+                                isClearable
+                                className="mb-5"
+                                placeholder="Number of Cycle"
+                              />
+                              <input
+                                placeholder="QTY"
+                                type="number"
+                                name="QTY"
+                                value={updatedPFIData.QTY}
+                                onChange={handleDeleteRequestedPFI}
+                                className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
+                              />
+                              <Select
+                                options={cyclesPerItem}
+                                value={cyclesPerItem.filter((option) =>
+                                  updatedPFIData.noOfCycles.some(
+                                    (cycle) => cycle.label === option.label
+                                  )
+                                )}
+                                name="noOfCycles"
+                                onChange={(selectedOption) => {
+                                  setUpdatedPFIData((prev) => ({
+                                    ...prev,
+                                    noOfCycles: selectedOption
+                                      ? selectedOption.map((option) => ({
+                                          label: option.label,
+                                          value: option.value,
+                                        }))
+                                      : [],
+                                  }));
+                                }}
+                                isClearable
+                                isMulti
+                                className="mb-5"
+                                placeholder="Number of Cycle"
+                              />
+                            </div>
+                          )}
+
+                          <DialogFooter>
+                            <button>Save changes</button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </td>
                   </tr>
                 ))}
