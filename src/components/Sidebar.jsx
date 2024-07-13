@@ -28,7 +28,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { TbLogout2 } from "react-icons/tb";
+
 import { useSubmit } from "react-router-dom";
 
 const sidebarVariants = {
