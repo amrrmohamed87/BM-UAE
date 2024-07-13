@@ -27,7 +27,7 @@ export function Login() {
     setIsLogin(true);
     try {
       const response = await fetch(
-        "https://benchmark-innovation.onrender.com/api/auth/login",
+        "https://benchmark-innovation-production.up.railway.app/api/auth/login",
         {
           method: "POST",
           headers: {
