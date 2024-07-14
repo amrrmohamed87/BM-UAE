@@ -7,28 +7,6 @@ import makeAnimated from "react-select/animated";
 import "../CSS/Select.css";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
-import {
   Card,
   CardContent,
   CardDescription,
@@ -38,33 +16,14 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Loader,
-  Pen,
-  Trash,
-  ExternalLink,
-  FileInput,
-  Users,
-  ArrowRight,
-  Box,
-} from "lucide-react";
-import { Link } from "react-router-dom";
 import PFI from "@/forms/PFI";
+import POCreation from "@/forms/POCreation";
 
 export function OrderEntry() {
-  const [poTableFilter, setPOTableFilter] = useState(false);
-
   /**
    * Animations
    * 1- Select animation
    */
-
-  const animatedOption = makeAnimated();
 
   /**
    * Console.log
@@ -637,9 +596,9 @@ export function OrderEntry() {
         </div>
       </div> */}
 
-      <div className="w-full border bg-neutral-100 rounded p-4">
+      <div className="w-full p-4">
         <Tabs defaultValue="pfi" className="w-full">
-          <TabsList className="grid w-[60%] grid-cols-4 bg-white">
+          <TabsList className="grid w-[64%] grid-cols-4 p-1 bg-neutral-200">
             <TabsTrigger value="pfi">PFI - Requests</TabsTrigger>
             <TabsTrigger value="po">PO - Creation</TabsTrigger>
             <TabsTrigger value="triton">Triton - Invoice</TabsTrigger>
@@ -671,180 +630,7 @@ export function OrderEntry() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="w-full flex flex-col gap-6 border bg-neutral-100 rounded p-4">
-                  <div className="flex flex-col md:flex-row items-start gap-16 w-full">
-                    <form method="post" className="w-1/2">
-                      <div className="flex flex-col bg-neutral-50 rounded shadow border p-4 w-full">
-                        <h1 className="mb-4 text-center text-[22px]">
-                          Create PO
-                        </h1>
-                        <input
-                          placeholder="PFI - Number"
-                          type="number"
-                          className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
-                        />
-                        <Select
-                          components={animatedOption}
-                          closeMenuOnSelect={false}
-                          isMulti
-                          isClearable
-                          className="mb-5"
-                          placeholder="Requested - PFI"
-                        />
-                        <input
-                          placeholder="Price"
-                          type="number"
-                          className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
-                        />
-                        <input
-                          placeholder="Shipping Fees"
-                          type="number"
-                          className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
-                        />
-                        <button className="bg-blue-900 p-2 text-white rounded transition-all duration-300 hover:bg-blue-500">
-                          Create PO
-                        </button>
-                      </div>
-                    </form>
-
-                    <form method="post" className="w-1/2">
-                      <div className="flex flex-col bg-neutral-50 rounded shadow border p-4 w-full">
-                        <h1 className="mb-4 text-center text-[22px]">
-                          Confirm PO
-                        </h1>
-                        <Select className="mb-6" placeholder="PO - ID" />
-                        <input
-                          placeholder="Order Confirmation Number"
-                          type="number"
-                          className="w-full mb-6 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
-                        />
-                        <button className="bg-blue-900 p-2 text-white rounded transition-all duration-300 hover:bg-blue-500">
-                          Confirm Order
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="flex flex-col w-full bg-white border shadow rounded-lg p-4 overflow-x-auto">
-                    <button
-                      onClick={() => {
-                        setPOTableFilter(!poTableFilter);
-                      }}
-                      className="flex justify-center items-center gap-1 w-[110px] px-3 py-1 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500"
-                    >
-                      Filter
-                      <motion.span
-                        animate={{ rotate: poTableFilter ? -180 : 0 }}
-                        transition={{ duration: 0.4 }}
-                      >
-                        <ChevronDown size={20} />
-                      </motion.span>
-                    </button>
-
-                    <AnimatePresence>
-                      {poTableFilter && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.4 }}
-                          style={{ overflow: "hidden" }}
-                          className="flex justify-between gap-6 mt-4"
-                        >
-                          <Select
-                            className="w-full custom-select"
-                            classNamePrefix="reac-select"
-                            menuPortalTarget={document.body}
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                            placeholder="Customer code"
-                          />
-                          <Select
-                            className="w-full custom-select"
-                            classNamePrefix="reac-select"
-                            menuPortalTarget={document.body}
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                            placeholder="Item"
-                          />
-                          <Select
-                            className="w-full custom-select"
-                            classNamePrefix="reac-select"
-                            menuPortalTarget={document.body}
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                            placeholder="QTY"
-                          />
-                          <Select
-                            className="w-full custom-select"
-                            classNamePrefix="reac-select"
-                            menuPortalTarget={document.body}
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                            placeholder="Cycle"
-                          />
-                          <Select
-                            className="w-full custom-select"
-                            classNamePrefix="reac-select"
-                            menuPortalTarget={document.body}
-                            styles={{
-                              menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                            }}
-                            placeholder="PFI - ID"
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <table className="min-w-full divide-y divide-neutral-900 mt-2">
-                      <thead className="bg-gray-200">
-                        <tr>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                          >
-                            Customer Code
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                          >
-                            Item
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                          >
-                            QTY
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                          >
-                            Cycle
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                          >
-                            PFI - ID
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                          >
-                            Action
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-neutral-800"></tbody>
-                    </table>
-                  </div>
-                </div>
+                <POCreation />
               </CardContent>
               <CardFooter></CardFooter>
             </Card>
