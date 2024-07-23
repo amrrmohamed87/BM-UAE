@@ -14,6 +14,11 @@ import CreateOrder from "./pages/CreateOrder";
 import PurchaseOrder from "./pages/PurchaseOrder";
 import AddUsers from "./pages/AddUsers";
 import AddItems from "./pages/AddItems";
+import PFIRequest from "./CAP/PFI/PFIRequest";
+import PFIReview from "./CAP/PFI/PFIReview";
+import POCreation from "./CAP/PO/POCreation";
+import POConfirmation from "./CAP/PO/POConfirmation";
+import CAPInvoice from "./CAP/CAPInvoice";
 function App() {
   //const location = useLocation();
   const isAuthenticated = localStorage.getItem("token");
@@ -42,6 +47,26 @@ function App() {
         {
           path: "/order-entry",
           element: <OrderEntry />,
+        },
+        {
+          path: "/CAP-pfi-request",
+          element: <PFIRequest />,
+        },
+        {
+          path: "/CAP-pfi-review",
+          element: <PFIReview />,
+        },
+        {
+          path: "/CAP-po-creation",
+          element: <POCreation />,
+        },
+        {
+          path: "/CAP-po-confirmation",
+          element: <POConfirmation />,
+        },
+        {
+          path: "/CAP-invoice",
+          element: <CAPInvoice />,
         },
         {
           path: "/supply-chain",
