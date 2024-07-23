@@ -1,11 +1,17 @@
 import { motion } from "framer-motion";
 import {
+  ArchiveRestore,
   FilePlus2,
   GitPullRequest,
   HandCoins,
+  ListChecks,
+  ListChecksIcon,
   PackageCheck,
   PackagePlus,
   PenIcon,
+  Scan,
+  ScanBarcode,
+  ScanEye,
   ScanSearch,
   X,
 } from "lucide-react";
@@ -89,6 +95,17 @@ export function FormNavigations({
             isClosed();
             closeOriginalSideBar();
           }}
+          name="PFI - Archive"
+          link="/CAP-pfi-review"
+        >
+          <ArchiveRestore className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+        </NavigationLinks>
+        <hr />
+        <NavigationLinks
+          closeSidebar={() => {
+            isClosed();
+            closeOriginalSideBar();
+          }}
           name="PO - Creation"
           link="/CAP-po-creation"
         >
@@ -99,11 +116,53 @@ export function FormNavigations({
             isClosed();
             closeOriginalSideBar();
           }}
-          name="PO - Confirmation"
-          link="/CAP-po-confirmation"
+          name="PO - Review"
+          link="/CAP-po-review"
         >
-          <PackageCheck className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+          <ScanEye className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
         </NavigationLinks>
+        <NavigationLinks
+          closeSidebar={() => {
+            isClosed();
+            closeOriginalSideBar();
+          }}
+          name="PO - Archive"
+          link="/CAP-po-archive"
+        >
+          <ArchiveRestore className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+        </NavigationLinks>
+        <hr />
+        <NavigationLinks
+          closeSidebar={() => {
+            isClosed();
+            closeOriginalSideBar();
+          }}
+          name="CAP - Confirmation"
+          link="/CAP-confiramtion"
+        >
+          <HandCoins className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks
+          closeSidebar={() => {
+            isClosed();
+            closeOriginalSideBar();
+          }}
+          name="CAP - Review"
+          link="/CAP-confirmation-review"
+        >
+          <ListChecksIcon className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks
+          closeSidebar={() => {
+            isClosed();
+            closeOriginalSideBar();
+          }}
+          name="CAP - Archive"
+          link="/CAP-confirmation-archive"
+        >
+          <ArchiveRestore className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+        </NavigationLinks>
+        <hr />
         <NavigationLinks
           closeSidebar={() => {
             isClosed();
@@ -113,6 +172,26 @@ export function FormNavigations({
           link="/CAP-invoice"
         >
           <HandCoins className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks
+          closeSidebar={() => {
+            isClosed();
+            closeOriginalSideBar();
+          }}
+          name="Invoice - review"
+          link="/CAP-invoice-review"
+        >
+          <ScanBarcode className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
+        </NavigationLinks>
+        <NavigationLinks
+          closeSidebar={() => {
+            isClosed();
+            closeOriginalSideBar();
+          }}
+          name="CAP - Invoice"
+          link="/CAP-invoice-archive"
+        >
+          <ArchiveRestore className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
         </NavigationLinks>
       </div>
     </motion.nav>

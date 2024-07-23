@@ -17,8 +17,15 @@ import AddItems from "./pages/AddItems";
 import PFIRequest from "./CAP/PFI/PFIRequest";
 import PFIReview from "./CAP/PFI/PFIReview";
 import POCreation from "./CAP/PO/POCreation";
-import POConfirmation from "./CAP/PO/POConfirmation";
-import CAPInvoice from "./CAP/CAPInvoice";
+
+import CAPInvoice from "./CAP/CAPInvoice/CAPInvoice";
+import POArchive from "./CAP/PO/POArchive";
+import CAPOrderConfirmation from "./CAP/CAPConfirmation/CAPOrderConfirmation";
+import CAPReview from "./CAP/CAPConfirmation/CAPReview";
+import CAPArchive from "./CAP/CAPConfirmation/CAPArchive";
+import InvoiceReview from "./CAP/CAPInvoice/InvoiceReview";
+import InvoiceArchive from "./CAP/CAPInvoice/InvoiceArchive";
+import POReview from "./CAP/PO/POReview";
 function App() {
   //const location = useLocation();
   const isAuthenticated = localStorage.getItem("token");
@@ -61,12 +68,36 @@ function App() {
           element: <POCreation />,
         },
         {
-          path: "/CAP-po-confirmation",
-          element: <POConfirmation />,
+          path: "/CAP-po-review",
+          element: <POReview />,
+        },
+        {
+          path: "/CAP-po-archive",
+          element: <POArchive />,
+        },
+        {
+          path: "/CAP-confiramtion",
+          element: <CAPOrderConfirmation />,
+        },
+        {
+          path: "/CAP-confirmation-review",
+          element: <CAPReview />,
+        },
+        {
+          path: "/CAP-confirmation-archive",
+          element: <CAPArchive />,
         },
         {
           path: "/CAP-invoice",
           element: <CAPInvoice />,
+        },
+        {
+          path: "/CAP-invoice-review",
+          element: <InvoiceReview />,
+        },
+        {
+          path: "/CAP-invoice-archive",
+          element: <InvoiceArchive />,
         },
         {
           path: "/supply-chain",
