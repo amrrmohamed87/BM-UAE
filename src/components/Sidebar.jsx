@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, useAnimationControls } from "framer-motion";
+import { motion, useAnimationControls, AnimatePresence } from "framer-motion";
 import logo from "../assets/logoIcon.png";
 import { NavigationLinks } from "@/data/NavigationLinks";
 import {
@@ -15,6 +15,7 @@ import {
   CircleUserRound,
   DollarSign,
   BadgePlus,
+  BringToFront,
 } from "lucide-react";
 
 import {
@@ -30,6 +31,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useSubmit } from "react-router-dom";
+import FormLinks from "@/data/FormLinks";
+import { FormNavigations } from "@/data/FormNavigations";
 
 const sidebarVariants = {
   close: {
@@ -84,6 +87,8 @@ export function Sidebar() {
   const submit = useSubmit();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [externalBarIsOpened, setExternalBarIsOpened] = useState(false);
+  const [selectedForm, setSelectedForm] = useState(null);
 
   const sidebarControls = useAnimationControls();
   const svgControls = useAnimationControls();
@@ -112,162 +117,209 @@ export function Sidebar() {
   }
 
   return (
-    <motion.nav
-      variants={sidebarVariants}
-      initial="close"
-      animate={sidebarControls}
-      className="bg-white flex flex-col z-10 gap-16 p-5 fixed top-0 left-0 h-full border shadow-md"
-    >
-      <div className="flex flex-row w-full justify-between place-items-center">
-        <motion.img
-          variants={logoVariants}
-          initial="close"
-          animate={logoControls}
-          src={logo}
-          className={`${isOpen ? "flex w-36" : "hidden"}`}
-        />
-        <button
-          className="p-1 rounded-full flex"
-          onClick={() => {
-            handleOpenClose();
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1}
-            stroke="currentColor"
-            className="w-6 h-6 stroke-blue-900"
+    <>
+      <style>
+        {` .glass {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 10px;
+            box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.3);
+          }`}
+      </style>
+      <motion.nav
+        variants={sidebarVariants}
+        initial="close"
+        animate={sidebarControls}
+        className="bg-white flex flex-col z-10 gap-16 p-5 fixed top-0 left-0 h-full border shadow-md"
+      >
+        <div className="flex flex-row w-full justify-between place-items-center">
+          <motion.img
+            variants={logoVariants}
+            initial="close"
+            animate={logoControls}
+            src={logo}
+            className={`${isOpen ? "flex w-36" : "hidden"}`}
+          />
+          <button
+            className="p-1 rounded-full flex"
+            onClick={() => {
+              handleOpenClose();
+            }}
           >
-            <motion.path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              variants={svgVariants}
-              animate={svgControls}
-              d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-              transition={{
-                duration: 0.5,
-                ease: "easeInOut",
-              }}
-            />
-          </svg>
-        </button>
-      </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1}
+              stroke="currentColor"
+              className="w-6 h-6 stroke-blue-900"
+            >
+              <motion.path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                variants={svgVariants}
+                animate={svgControls}
+                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                transition={{
+                  duration: 0.5,
+                  ease: "easeInOut",
+                }}
+              />
+            </svg>
+          </button>
+        </div>
 
-      <div className="flex items-center gap-2">
-        <CircleUserRound className="stroke-[0.75] stroke-blue-900 min-w-8 w-8" />
-        <p className="text-blue-900 font-semibold overflow-hidden whitespace-nowrap tracking-wide">
-          {name}
-        </p>
-      </div>
+        <div className="flex items-center gap-2">
+          <CircleUserRound className="stroke-[0.75] stroke-blue-900 min-w-8 w-8" />
+          <p className="text-blue-900 font-semibold overflow-hidden whitespace-nowrap tracking-wide">
+            {name}
+          </p>
+        </div>
 
-      <div className="flex flex-col gap-3 flex-grow">
-        <NavigationLinks
-          closeSidebar={() => {
-            setIsOpen(false);
-          }}
-          link="/"
-          name="Dashboard"
-        >
-          <LayoutDashboard className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
-        <NavigationLinks
-          closeSidebar={() => {
-            setIsOpen(false);
-          }}
-          link="/order-entry"
-          name="Order Entry"
-        >
-          <Pen className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
-        {/* <NavigationLinks link="/invoices" name="Invoices">
+        <div className="flex flex-col gap-3">
+          <NavigationLinks
+            closeSidebar={() => {
+              setIsOpen(false);
+            }}
+            link="/"
+            name="Dashboard"
+          >
+            <LayoutDashboard className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </NavigationLinks>
+          <NavigationLinks
+            closeSidebar={() => {
+              setIsOpen(false);
+            }}
+            link="/order-entry"
+            name="Order Entry"
+          >
+            <Pen className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </NavigationLinks>
+          {/* <NavigationLinks link="/invoices" name="Invoices">
           <DollarSign className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
         </NavigationLinks> */}
-        <NavigationLinks
-          closeSidebar={() => {
-            setIsOpen(false);
-          }}
-          link="/supply-chain"
-          name="Supply Chain"
-        >
-          <BarChart3 className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
-        <NavigationLinks
-          closeSidebar={() => {
-            setIsOpen(false);
-          }}
-          link="/create-order"
-          name="Create Order"
-        >
-          <PackagePlus className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
-        <NavigationLinks
-          closeSidebar={() => {
-            setIsOpen(false);
-          }}
-          link="/purchase-order"
-          name="Purchase Order"
-        >
-          <HandCoins className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
-        <NavigationLinks
-          closeSidebar={() => {
-            setIsOpen(false);
-          }}
-          link="/add-items"
-          name="Add Items"
-        >
-          <BadgePlus className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
-        <NavigationLinks
-          closeSidebar={() => {
-            setIsOpen(false);
-          }}
-          link="/create-account"
-          name="Users"
-        >
-          <UsersIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-        </NavigationLinks>
-      </div>
+          <NavigationLinks
+            closeSidebar={() => {
+              setIsOpen(false);
+            }}
+            link="/supply-chain"
+            name="Supply Chain"
+          >
+            <BarChart3 className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </NavigationLinks>
+          <NavigationLinks
+            closeSidebar={() => {
+              setIsOpen(false);
+            }}
+            link="/create-order"
+            name="Create Order"
+          >
+            <PackagePlus className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </NavigationLinks>
+          <NavigationLinks
+            closeSidebar={() => {
+              setIsOpen(false);
+            }}
+            link="/purchase-order"
+            name="Purchase Order"
+          >
+            <HandCoins className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </NavigationLinks>
+          <NavigationLinks
+            closeSidebar={() => {
+              setIsOpen(false);
+            }}
+            link="/add-items"
+            name="Add Items"
+          >
+            <BadgePlus className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </NavigationLinks>
+          <NavigationLinks
+            closeSidebar={() => {
+              setIsOpen(false);
+            }}
+            link="/create-account"
+            name="Users"
+          >
+            <UsersIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </NavigationLinks>
+        </div>
 
-      <div className="flex flex-col">
-        {token && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <div className="p-1 rounded flex items-center gap-3 cursor-pointer stroke-[0.75] hover:stroke-neutral-100 stroke-neutral-400 text-neutral-400 hover:text-neutral-100 place-items-center hover:bg-blue-900 transition-color duration-300">
-                <LogOutIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
-                <button className="text-inherit overflow-hidden whitespace-nowrap tracking-wide">
-                  Logout
-                </button>
-              </div>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="bg-white w-[320px] md:w-[500px]">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently Log you
-                  out from your account.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="flex items-center gap-3">
-                <AlertDialogCancel className="bg-red-600 text-white mt-1 hover:bg-red-900 hover:text-white transition-all duration-300">
-                  Cancel
-                </AlertDialogCancel>
-                <form
-                  action="/logout"
-                  method="post"
-                  onClick={logoutHandler}
-                  className="bg-blue-600 rounded-md px-3 py-2 cursor-pointer hover:bg-blue-900 transition-all duration-300"
-                >
-                  <button className="text-white">Logout</button>
-                </form>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+        <div
+          className="flex flex-col gap-3 flex-grow"
+          onClick={() => {
+            setExternalBarIsOpened(!externalBarIsOpened);
+          }}
+        >
+          <FormLinks
+            onCLose={() => {
+              setExternalBarIsOpened(!externalBarIsOpened);
+            }}
+            name="CAP Operations"
+            setSelectedForm={setSelectedForm}
+            isOpen={externalBarIsOpened}
+            isClosed={externalBarIsOpened}
+            textOverflow={isOpen}
+          >
+            <BringToFront className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </FormLinks>
+        </div>
+
+        <div className="flex flex-col">
+          {token && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <div className="p-1 rounded flex items-center gap-3 cursor-pointer stroke-[0.75] hover:stroke-neutral-100 stroke-neutral-400 text-neutral-400 hover:text-neutral-100 place-items-center hover:bg-blue-900 transition-color duration-300">
+                  <LogOutIcon className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+                  <button className="text-inherit overflow-hidden whitespace-nowrap tracking-wide">
+                    Logout
+                  </button>
+                </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white w-[320px] md:w-[500px]">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently Log you
+                    out from your account.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="flex items-center gap-3">
+                  <AlertDialogCancel className="bg-red-600 text-white mt-1 hover:bg-red-900 hover:text-white transition-all duration-300">
+                    Cancel
+                  </AlertDialogCancel>
+                  <form
+                    action="/logout"
+                    method="post"
+                    onClick={logoutHandler}
+                    className="bg-blue-600 rounded-md px-3 py-2 cursor-pointer hover:bg-blue-900 transition-all duration-300"
+                  >
+                    <button className="text-white">Logout</button>
+                  </form>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+      </motion.nav>
+      <AnimatePresence>
+        {externalBarIsOpened && (
+          <FormNavigations
+            selectedForm={selectedForm}
+            setSelectedForm={setSelectedForm}
+            isOpen={externalBarIsOpened}
+            isClosed={() => {
+              setExternalBarIsOpened(!externalBarIsOpened);
+            }}
+            sideBarIsOpen={isOpen}
+            closeOriginalSideBar={() => {
+              setIsOpen(false);
+            }}
+          />
         )}
-      </div>
-    </motion.nav>
+      </AnimatePresence>
+    </>
   );
 }
 
