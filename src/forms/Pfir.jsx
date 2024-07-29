@@ -70,6 +70,7 @@ export function Pfir({ itemsOptions, customerOptions }) {
 
   const [finalRequestData, setFinalRequestData] = useState({
     customerId: "",
+    PFINo: "",
     PFIItems: [],
   });
   const [isRequestingPFI, setIsrequestingPFI] = useState(false);
@@ -221,13 +222,14 @@ export function Pfir({ itemsOptions, customerOptions }) {
         return transformedItem;
       });
     };
-    console.log(transformAddedItems(addedItems));
+    //console.log(transformAddedItems(addedItems));
 
     const finalData = {
       ...finalRequestData,
       PFIItems: transformAddedItems(addedItems),
     };
 
+    console.log(finalData);
     try {
       const response = await fetch(
         "https://benchmark-innovation-production.up.railway.app/api/pfi",
@@ -255,6 +257,7 @@ export function Pfir({ itemsOptions, customerOptions }) {
       setSelectedCustomerCode(null);
       setFinalRequestData({
         customerId: "",
+        PFINo: "",
         PFIItems: [],
       });
 
@@ -277,9 +280,9 @@ export function Pfir({ itemsOptions, customerOptions }) {
    * console log
    */
 
-  console.log(selectedUnit);
-  console.log(selectedItemsData);
-  console.log(addedItems);
+  //console.log(selectedUnit);
+  //console.log(selectedItemsData);
+  //console.log(addedItems);
 
   return (
     <div className="flex flex-col items-center w-full gap-10">
@@ -301,8 +304,19 @@ export function Pfir({ itemsOptions, customerOptions }) {
               className="mb-5"
               placeholder="Customer Code"
             />
-
-            {/** This select needs customization to customize the selectedItemData */}
+            <input
+              placeholder="PFI Number"
+              type="number"
+              name="PFINo"
+              value={finalRequestData.PFINo}
+              onChange={(event) => {
+                setFinalRequestData((prev) => ({
+                  ...prev,
+                  PFINo: event.target.value,
+                }));
+              }}
+              className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
+            />
             <Select
               options={itemsOptions}
               value={selectedItem}

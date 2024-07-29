@@ -96,21 +96,12 @@ export function FormNavigations({
             closeOriginalSideBar();
           }}
           name="PFI - Archive"
-          link="/CAP-pfi-review"
+          link="/CAP-pfi-archive"
         >
           <ArchiveRestore className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
         </NavigationLinks>
         <hr />
-        <NavigationLinks
-          closeSidebar={() => {
-            isClosed();
-            closeOriginalSideBar();
-          }}
-          name="PO - Creation"
-          link="/CAP-po-creation"
-        >
-          <PackagePlus className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
-        </NavigationLinks>
+
         <NavigationLinks
           closeSidebar={() => {
             isClosed();

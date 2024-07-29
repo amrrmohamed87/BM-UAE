@@ -26,6 +26,7 @@ import CAPArchive from "./CAP/CAPConfirmation/CAPArchive";
 import InvoiceReview from "./CAP/CAPInvoice/InvoiceReview";
 import InvoiceArchive from "./CAP/CAPInvoice/InvoiceArchive";
 import POReview from "./CAP/PO/POReview";
+import PFIArchive from "./CAP/PFI/PFIArchive";
 function App() {
   //const location = useLocation();
   const isAuthenticated = localStorage.getItem("token");
@@ -64,8 +65,8 @@ function App() {
           element: <PFIReview />,
         },
         {
-          path: "/CAP-po-creation",
-          element: <POCreation />,
+          path: "/CAP-pfi-archive",
+          element: <PFIArchive />,
         },
         {
           path: "/CAP-po-review",

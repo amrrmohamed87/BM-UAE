@@ -95,7 +95,7 @@ export function PFIRequest() {
     loadItems();
   }, []);
 
-  console.log(items);
+  //console.log(items);
 
   return (
     <section className=" flex flex-col p-10 ml-20 w-full gap-5">
@@ -111,7 +111,7 @@ export function PFIRequest() {
           <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
             <Users size={20} className="text-blue-700" /> Total Customers
           </h1>
-          <p className="mb-3 text-neutral-900 font-semibold text-[28px]">
+          <div className="mb-3 text-neutral-900 font-semibold text-[28px]">
             {isLoadingCustomer ? (
               <motion.div
                 animate={{ rotate: 360 }}
@@ -127,7 +127,7 @@ export function PFIRequest() {
             ) : (
               customersList.length
             )}
-          </p>
+          </div>
           <Link
             to="/create-account"
             className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"

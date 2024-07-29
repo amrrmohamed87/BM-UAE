@@ -3,7 +3,9 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArchiveRestore,
   ArrowRight,
+  Box,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -16,7 +18,6 @@ import {
   Trash,
 } from "lucide-react";
 import Select from "react-select";
-import makeAnimated from "react-select/animated";
 import "../../CSS/Select.css";
 
 import {
@@ -41,6 +42,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Link } from "react-router-dom";
+import { exportToPDF, exportToExcel } from "@/utils/ExcelPDF";
 
 export function PFIReview() {
   /**
@@ -72,6 +74,9 @@ export function PFIReview() {
   const [uniqueCAPIDOptions, setUniqueCAPIDOptions] = useState([]);
   const [uniqueCAPIDQueue, setUniqueCAPIDQueue] = useState("");
 
+  const [uniquePFINoOptions, setUniquePFINoOptions] = useState([]);
+  const [uniquePFINoQueue, setUniquePFINoQueue] = useState("");
+
   const [uniqueSERIALOptions, setUniqueSERIALOptions] = useState([]);
   const [uniqueSERIALQueue, setUniqueSERIALQueue] = useState("");
 
@@ -91,6 +96,12 @@ export function PFIReview() {
   const [isLoadingSinglePFI, setIsLoadingSinglePFI] = useState(false);
 
   const [reloadTable, setIsReloadTable] = useState(false);
+
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  const [isUpdatingPFI, setIsUpdatingPFI] = useState(false);
+
+  const [isCreatingPO, setIsCreatingPO] = useState(false);
 
   /**
    * useEffect fucntions to fetch data
@@ -123,6 +134,14 @@ export function PFIReview() {
           value: cap,
         }));
         setUniqueCAPIDOptions(uniqueCAPID);
+
+        const uniquePFINo = [
+          ...new Set(resData.data.map((pfi) => pfi.PFINo)),
+        ].map((PFINo) => ({
+          label: PFINo,
+          value: PFINo,
+        }));
+        setUniquePFINoOptions(uniquePFINo);
 
         const uniqueSERIAL = [
           ...new Set(resData.data.map((serial) => serial.SERIAL)),
@@ -186,23 +205,34 @@ export function PFIReview() {
   /**
    * Function to Deal with APIs
    * 1- handleSoftDeleteRequestedPFI
+   * 2- handleUpdatePFI
+   * 3- handleCreatePO
    */
+
+  //console.log(requestedPFIs);
 
   const handleSoftDeleteRequestedPFI = async () => {
     setIsArchivingPFIRequest(true);
 
+    const pfiIds = {
+      ids: selectedRows.map((row) => row.id),
+    };
+    console.log(pfiIds);
+
     try {
       const response = await fetch(
-        `https://benchmark-innovation-production.up.railway.app/api/pfi/soft/${pfiRequestId.id}`,
+        "https://benchmark-innovation-production.up.railway.app/api/pfi/soft",
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(pfiIds),
         }
       );
       const resData = await response.json();
 
+      console.log(resData.message);
       if (!response.ok) {
         toast.error(resData.message);
         setIsArchivingPFIRequest(false);
@@ -211,14 +241,94 @@ export function PFIReview() {
 
       toast.success("PFI Archived Successfully");
 
+      setSelectedRows([]);
       setIsReloadTable(!reloadTable);
-      setPFIRequestId({
-        id: "",
-      });
       setIsArchivingPFIRequest(false);
     } catch (error) {
       toast.error(error.message);
       setIsArchivingPFIRequest(false);
+      return;
+    }
+  };
+
+  const handleUpdatePFI = async (event) => {
+    event.preventDefault();
+    setIsUpdatingPFI(true);
+
+    const updatedData = {
+      ...pfiData,
+    };
+
+    console.log(updatedData);
+    try {
+      const response = await fetch(
+        `https://benchmark-innovation-production.up.railway.app/api/pfi/${pfiRequestId.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
+        }
+      );
+
+      const resData = await response.json();
+
+      console.log(resData.message);
+
+      if (!response.ok) {
+        toast.error(resData.message);
+        setIsUpdatingPFI(false);
+        return;
+      }
+
+      toast.success("PFI Updated Successfully");
+      setPFIRequestId({
+        id: "",
+      });
+      setPFIDate([]);
+      setIsUpdatingPFI(false);
+    } catch (error) {
+      toast.error(error.message);
+      setIsUpdatingPFI(false);
+      return;
+    }
+  };
+
+  const handleCreatePO = async () => {
+    setIsCreatingPO(true);
+
+    const poData = {
+      PFIId: selectedRows.map((pfi) => pfi.id),
+    };
+
+    try {
+      const response = await fetch(
+        "https://benchmark-innovation-production.up.railway.app/api/po",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(poData),
+        }
+      );
+      const resData = await response.json();
+
+      if (!response.ok) {
+        toast.error(resData.message);
+        setIsCreatingPO(false);
+        return;
+      }
+
+      toast.success("PO Created Succefully");
+
+      setIsReloadTable(!reloadTable);
+      setSelectedRows([]);
+      setIsCreatingPO(false);
+    } catch (error) {
+      toast.error(error.message);
+      setIsCreatingPO(false);
       return;
     }
   };
@@ -233,13 +343,18 @@ export function PFIReview() {
   const filteredPFIs = requestedPFIs.filter(
     (pfi) =>
       (!uniqueCAPIDQueue ||
-        pfi.Customer.customerCapIdNo.toLowerCase() ===
-          uniqueCAPIDQueue.toLowerCase()) &&
+        pfi.Customer.customerCapIdNo.toString().toLowerCase() ===
+          uniqueCAPIDQueue.toString().toLowerCase()) &&
       (!uniqueItemsQueue ||
-        pfi.PFIItems.map((item) => item.Items.itemName.toLowerCase()) ===
-          uniqueItemsQueue.toLowerCase()) &&
+        pfi.PFIItems.some((item) =>
+          item.Items.itemName
+            .toLowerCase()
+            .includes(uniqueItemsQueue.toLowerCase())
+        )) &&
       (!uniqueSERIALQueue ||
-        pfi.SERIAL.toLowerCase() === uniqueSERIALQueue.toLowerCase())
+        pfi.SERIAL.toLowerCase() === uniqueSERIALQueue.toLowerCase()) &&
+      (!uniquePFINoQueue ||
+        pfi.PFINo.toLowerCase() === uniquePFINoQueue.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredPFIs.length / rowsPerPage);
@@ -278,6 +393,109 @@ export function PFIReview() {
     setCurrentPage(1);
   }
 
+  function handleCheckboxChange(event, pfi) {
+    const isChecked = event.target.checked;
+
+    setSelectedRows((prevRows) => {
+      if (isChecked) {
+        return [...prevRows, pfi];
+      } else {
+        return prevRows.filter((row) => row !== pfi);
+      }
+    });
+  }
+
+  /* Export functions
+   * 1- handleExportArchivedPFIToExcel
+   * 2- handleExportArchivedPFIToPDF
+   */
+
+  const handleExportRequestedPFIToExcel = () => {
+    const formatRequestedPFIDataForExcel = () => {
+      return requestedPFIs.map((pfi) => ({
+        "Customer Name": pfi.Customer.customerName,
+        "CAP ID": pfi.Customer.customerCapIdNo,
+        Item: pfi.PFIItems.map((item) => item.Items.itemName).join(", "),
+        Unit: pfi.PFIItems.map((item) => {
+          if (item.program.length > 0) {
+            return "Program";
+          } else if (item.unit.length > 0) {
+            return item.unit.map((u) => u.label).join(", ");
+          } else {
+            return "No Data";
+          }
+        }).join(", "),
+        SHPDate: pfi.PFIItems.map((item) => {
+          if (item.program.length > 0) {
+            return item.program.map((p) => formateDate(p.SHPDate)).join(", ");
+          } else if (item.unit.length > 0) {
+            return item.unit.map((u) => formateDate(u.SHPDate)).join(", ");
+          } else {
+            return "No Date";
+          }
+        }).join(", "),
+        QTY: pfi.PFIItems.map((item) => item.quantity).join(", "),
+        SHPFees: pfi.PFIItems.map((item) => item.SHPFees).join(", "),
+        Price: pfi.PFIItems.map((item) => item.price).join(", "),
+        Total: pfi.PFIItems.map((item) => item.total).join(", "),
+        PFIValue: pfi.PFIValue,
+        "PFI - Serial": pfi.SERIAL,
+      }));
+    };
+    exportToExcel(formatRequestedPFIDataForExcel, "requested-PFI-requests");
+    toast.success("requested-PFI-requests Excel Sheet Downloaded Successfully");
+  };
+
+  const handleExportRequestedPFIToPDF = () => {
+    const columns = [
+      "Customer Name",
+      "CAP ID",
+      "Item",
+      "Unit",
+      "SHPDate",
+      "QTY",
+      "SHPFees",
+      "Price",
+      "Total",
+      "PFIValue",
+      "PFI Serial",
+    ];
+    exportToPDF(
+      requestedPFIs.map((pfi) => ({
+        "Customer Name": pfi.Customer.customerName,
+        "CAP ID": pfi.Customer.customerCapIdNo,
+        Item: pfi.PFIItems.map((item) => item.Items.itemName).join(", "),
+        Unit: pfi.PFIItems.map((item) => {
+          if (item.program.length > 0) {
+            return "Program";
+          } else if (item.unit.length > 0) {
+            return item.unit.map((u) => u.label).join(", ");
+          } else {
+            return "No Data";
+          }
+        }).join(", "),
+        SHPDate: pfi.PFIItems.map((item) => {
+          if (item.program.length > 0) {
+            return item.program.map((p) => formateDate(p.SHPDate)).join(", ");
+          } else if (item.unit.length > 0) {
+            return item.unit.map((u) => formateDate(u.SHPDate)).join(", ");
+          } else {
+            return "No Date";
+          }
+        }).join(", "),
+        QTY: pfi.PFIItems.map((item) => item.quantity).join(", "),
+        SHPFees: pfi.PFIItems.map((item) => item.SHPFees).join(", "),
+        Price: pfi.PFIItems.map((item) => item.price).join(", "),
+        Total: pfi.PFIItems.map((item) => item.total).join(", "),
+        PFIValue: pfi.PFIValue,
+        "PFI Serial": pfi.SERIAL,
+      })),
+      columns,
+      "requested-PFI-requests"
+    );
+    toast.success("requested-PFI-requests PDF Downloaded Successfully");
+  };
+
   /**
    * Custome Components
    * 1- Pagination
@@ -285,43 +503,43 @@ export function PFIReview() {
 
   const Pagination = () => {
     return (
-      <div className="flex justify-end items-center gap-6 mt-6">
-        <p>
-          Rows per Page:
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-1">
+          <p>Rows per Page:</p>
           <input
             type="number"
             value={rowsPerPage}
             onChange={handleRowsPerPage}
-            className="w-12 pl-3 border-2 rounded-md"
+            className="w-10 pl-3 border rounded-md shadow"
           />
-        </p>
+        </div>
         <p>
           Page {currentPage} of {totalPages}
         </p>
         <div className="flex items-center gap-1">
           <button
-            className="px-2 py-1 rounded-md border-2 bg-blue-900 transition-all duration-200 hover:bg-blue-600"
+            className="px-2 py-1 rounded-md cursor-pointer border-2 bg-blue-500 transition-all duration-200 hover:bg-blue-900"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(1)}
           >
             <ChevronsLeft size={20} className="text-white" />
           </button>
           <button
-            className="px-2 py-1 rounded-md border-2 bg-blue-900 transition-all duration-300 hover:bg-blue-600"
+            className="px-2 py-1 rounded-md cursor-pointer border-2 bg-blue-500 transition-all duration-300 hover:bg-blue-900"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => prev - 1)}
           >
             <ChevronLeft size={20} className="text-white" />
           </button>
           <button
-            className="px-2 py-1 rounded-md border-2 bg-blue-900 transition-all duration-300 hover:bg-blue-600"
+            className="px-2 py-1 rounded-md cursor-pointer border-2 bg-blue-500 transition-all duration-300 hover:bg-blue-900"
             disabled={currentPage >= totalPages}
             onClick={() => setCurrentPage((prev) => prev + 1)}
           >
             <ChevronRight size={20} className="text-white" />
           </button>
           <button
-            className="px-2 py-1 rounded-md border-2 bg-blue-900 transition-all duration-300 hover:bg-blue-600"
+            className="px-2 py-1 rounded-md cursor-pointer border-2 bg-blue-500 transition-all duration-300 hover:bg-blue-900"
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(totalPages)}
           >
@@ -332,19 +550,19 @@ export function PFIReview() {
     );
   };
 
-  console.log(pfiData);
+  console.log(requestedPFIs);
 
   return (
-    <section className="bg-[#F5F5F5] flex flex-col p-10 ml-20 w-full gap-5">
-      <div className="flex flex-col gap-3 md:flex-row justify-center md:justify-start items-center md:gap-12">
-        <div>
+    <section className="bg-[#F8F9FA] flex flex-col p-10 ml-20 w-full gap-5">
+      <div className="flex flex-col gap-3 md:flex-row justify-center md:justify-start items-center md:gap-16">
+        <div className="flex flex-col items-start w-full">
           <h1 className="text-3xl text-neutral-900">Proforma Review</h1>
-          <p className="text-md text-neutral-500 mt-2">
+          <p className="text-sm text-neutral-500 mt-1">
             Review all requested PFIs and edit them through the following table.
           </p>
         </div>
 
-        <div className="bg-white p-2 border shadow-md rounded-md w-80">
+        <div className="bg-white p-2 border shadow-md rounded-md w-full">
           <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
             <ShoppingBag size={20} className="text-blue-700" /> Total Requests
           </h1>
@@ -373,57 +591,43 @@ export function PFIReview() {
           </Link>
         </div>
 
-        {/* <div className="bg-white p-2 border shadow-md rounded-md w-80">
+        <div className="bg-white p-4 border shadow-md rounded-md w-full">
           <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
-            <Box size={20} className="text-blue-700" /> Items
+            <ArchiveRestore size={20} className="text-blue-700" /> Archive
           </h1>
-          <div className="mb-3 text-neutral-900 font-semibold text-[28px]">
-            {isLoadingItems ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 1,
-                  ease: "linear",
-                }}
-                style={{ display: "inline-block" }}
-              >
-                <Loader className="text-black" />
-              </motion.div>
-            ) : (
-              items.length
-            )}
+          <div className="mb-3 text-neutral-900 font-semibold text-[18px]">
+            Archived PFIs Table
           </div>
           <Link
-            to="/add-items"
+            to="/CAP-pfi-archive"
             className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"
           >
-            Manage Items <ArrowRight size={16} className="mt-1" />
+            Archive <ArrowRight size={16} className="mt-1" />
           </Link>
-        </div> */}
+        </div>
+
+        <div className="bg-white p-4 border shadow-md rounded-md w-full">
+          <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
+            <Box size={20} className="text-blue-700" /> PO
+          </h1>
+          <div className="mb-3 text-neutral-900 font-semibold text-[18px]">
+            PO Table Data
+          </div>
+          <Link
+            to="/CAP-po-review"
+            className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"
+          >
+            View <ArrowRight size={16} className="mt-1" />
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col w-full my-6 bg-white border shadow rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => {
-              setFilterRequestedPFITable(!filterRequestedPFITable);
-            }}
-            className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500"
-          >
-            Filter
-            <motion.span
-              animate={{ rotate: filterRequestedPFITable ? -180 : 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              <ChevronDown size={20} />
-            </motion.span>
-          </button>
-
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 items-start">
             <Dialog>
               <DialogTrigger asChild>
-                <button className="flex justify-center items-center gap-1 px-10 py-2 bg-green-500 text-white rounded-md transition-all duration-300 hover:bg-green-900">
+                <button className="flex justify-center items-center gap-1 px-10 py-2 bg-blue-500 text-white rounded-md transition-all duration-300 hover:bg-blue-900">
                   DownLoad <Download size={18} />
                 </button>
               </DialogTrigger>
@@ -437,15 +641,172 @@ export function PFIReview() {
                 </DialogHeader>
 
                 <DialogFooter className="mt-4">
-                  <button className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-emerald-700 text-white rounded-md transition-all duration-300 hover:bg-emerald-900">
+                  <button
+                    onClick={handleExportRequestedPFIToExcel}
+                    className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-emerald-700 text-white rounded-md transition-all duration-300 hover:bg-emerald-900"
+                  >
                     Excel
                   </button>
-                  <button className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-red-700 text-white rounded-md transition-all duration-300 hover:bg-red-900">
+                  <button
+                    onClick={handleExportRequestedPFIToPDF}
+                    className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-red-700 text-white rounded-md transition-all duration-300 hover:bg-red-900"
+                  >
                     PDF
                   </button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            <button
+              onClick={() => {
+                setFilterRequestedPFITable(!filterRequestedPFITable);
+              }}
+              className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-blue-500 text-white rounded-md transition-all duration-300 hover:bg-blue-900"
+            >
+              Filter
+              <motion.span
+                animate={{ rotate: filterRequestedPFITable ? -180 : 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <ChevronDown size={20} />
+              </motion.span>
+            </button>
+          </div>
+
+          <div className="flex flex-col items-start gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="w-full py-2 bg-blue-500 rounded-md text-white transition-all duration-300 hover:bg-blue-900">
+                  {isCreatingPO ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 1,
+                        ease: "linear",
+                      }}
+                      style={{
+                        display: "inline-block",
+                      }}
+                    >
+                      <Loader className="text-white" />
+                    </motion.div>
+                  ) : (
+                    "Create PO"
+                  )}
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will create PO for those
+                    PFIs.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setSelectedRows([])}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <form method="post">
+                    <AlertDialogAction onClick={handleCreatePO}>
+                      Confirm
+                    </AlertDialogAction>
+                  </form>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <div className="flex gap-3 items-center">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="px-7 py-2 bg-blue-500 rounded-md text-white transition-all duration-300 hover:bg-blue-900">
+                    {isArchivingPFIRequest ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 1,
+                          ease: "linear",
+                        }}
+                        style={{
+                          display: "inline-block",
+                        }}
+                      >
+                        <Loader className="text-white" />
+                      </motion.div>
+                    ) : (
+                      "Archive"
+                    )}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will restore those
+                      PFIs.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setSelectedRows([])}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <form method="delete">
+                      <AlertDialogAction onClick={handleSoftDeleteRequestedPFI}>
+                        Confirm
+                      </AlertDialogAction>
+                    </form>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="px-8 py-2 bg-blue-500 rounded-md text-white transition-all duration-300 hover:bg-blue-900">
+                    {isArchivingPFIRequest ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 1,
+                          ease: "linear",
+                        }}
+                        style={{
+                          display: "inline-block",
+                        }}
+                      >
+                        <Loader className="text-white" />
+                      </motion.div>
+                    ) : (
+                      "Delete"
+                    )}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will restore those
+                      PFIs.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setSelectedRows([])}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <form method="delete">
+                      <AlertDialogAction onClick={handleSoftDeleteRequestedPFI}>
+                        Confirm
+                      </AlertDialogAction>
+                    </form>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </div>
 
@@ -477,6 +838,23 @@ export function PFIReview() {
                 placeholder="CAP - ID"
               />
               <Select
+                options={uniquePFINoOptions}
+                value={uniquePFINoOptions.find(
+                  (option) => option.value === uniquePFINoQueue
+                )}
+                onChange={(option) => {
+                  setUniquePFINoQueue(option && option.value);
+                }}
+                isClearable
+                className="w-full custom-select"
+                classNamePrefix="reac-select"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+                placeholder="Quote #"
+              />
+              <Select
                 options={uniqueItemsOptions}
                 value={uniqueItemsOptions.find(
                   (option) => option.value === uniqueItemsQueue
@@ -493,7 +871,7 @@ export function PFIReview() {
                 }}
                 placeholder="Item Name"
               />
-              <Select
+              {/*  <Select
                 options={uniqueSERIALOptions}
                 value={uniqueSERIALOptions.find(
                   (option) => option.value === uniqueSERIALQueue
@@ -509,7 +887,7 @@ export function PFIReview() {
                   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                 }}
                 placeholder="PFI - Serial"
-              />
+              /> */}
             </motion.div>
           )}
         </AnimatePresence>
@@ -532,42 +910,48 @@ export function PFIReview() {
         ) : requestedPFIs.length <= 0 ? (
           <h1 className="text-center text-[24px] mt-8">NO PFIs FOUND.</h1>
         ) : (
-          <table className="min-w-full divide-y divide-neutral-900 mt-2">
+          <table className="min-w-full divide-y divide-neutral-400 mt-2">
             <thead className="bg-gray-200">
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
+                >
+                  PFIs
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
                 >
                   CAP - Id
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
                 >
-                  Serial
+                  Quote #
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
                 >
                   Item
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
                 >
                   Unit
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
                 >
                   SHPDate
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
                 >
                   QTY
                 </th>
@@ -604,14 +988,50 @@ export function PFIReview() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-neutral-800">
+            <tbody className="bg-white divide-y divide-neutral-400">
               {currentData.map((pfi, index) => (
-                <tr key={index}>
+                <tr
+                  key={index}
+                  className={`transition-all duration-150 hover:bg-gray-100 ${
+                    selectedRows.includes(pfi) ? "bg-neutral-300" : "bg-white"
+                  }`}
+                >
+                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
+                    <label className="relative flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        onChange={(event) => handleCheckboxChange(event, pfi)}
+                        checked={selectedRows.includes(pfi)}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`w-6 h-6 ${
+                          selectedRows.includes(pfi)
+                            ? "bg-blue-900"
+                            : "bg-white"
+                        } border rounded-md flex-shrink-0 flex items-center justify-center transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:bg-blue-100 hover:border-blue-300`}
+                      >
+                        {selectedRows.includes(pfi) && (
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                    </label>
+                  </td>
                   <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
                     {pfi.Customer.customerCapIdNo}
                   </td>
                   <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                    {pfi.SERIAL}
+                    {pfi.PFINo}
                   </td>
                   <td className="px-4 py-6 whitespace-normal text-sm font-medium text-gray-900">
                     <ul className="list-decimal pl-5">
@@ -743,7 +1163,13 @@ export function PFIReview() {
                         </AlertDialogContent>
                       </AlertDialog>
 
-                      <Dialog>
+                      <Dialog
+                        onClose={() => {
+                          setPFIRequestId({
+                            id: "",
+                          });
+                        }}
+                      >
                         <DialogTrigger asChild>
                           <button
                             onClick={() => {
@@ -755,7 +1181,7 @@ export function PFIReview() {
                             <ListChecks size={18} className="text-blue-500" />
                           </button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
+                        <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[900px]">
                           <DialogHeader>
                             <DialogTitle>Edit PFI</DialogTitle>
                             <DialogDescription>
@@ -778,30 +1204,113 @@ export function PFIReview() {
                               </motion.div>
                             </div>
                           ) : (
-                            <div className="grid gap-4 py-4">
-                              <input
-                                placeholder="PFI - Number"
-                                type="number"
-                                name="QTY"
-                                className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
-                              />
-                              <input
-                                placeholder="SHP - Fees"
-                                type="number"
-                                name="QTY"
-                                className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
-                              />
-                              <input
-                                placeholder="Price"
-                                type="number"
-                                name="QTY"
-                                className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
-                              />
-                            </div>
+                            pfiData && (
+                              <div className="grid gap-4 py-4 max-h-[500px] overflow-y-auto">
+                                <input
+                                  placeholder="PFI - Number"
+                                  type="number"
+                                  name="PFINo"
+                                  value={pfiData.PFINo || ""}
+                                  className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
+                                  onChange={(e) =>
+                                    setPFIDate({
+                                      ...pfiData,
+                                      PFINo: e.target.value,
+                                    })
+                                  }
+                                />
+                                <div>
+                                  {pfiData.PFIItems && (
+                                    <div className="grid grid-cols-2 gap-8 place-content-center">
+                                      {pfiData.PFIItems.map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className=" bg-neutral-100 shadow border p-3 rounded-md"
+                                        >
+                                          <h1 className="text-center mb-2">
+                                            {item.Items.itemName}
+                                          </h1>
+                                          <div className="flex flex-col gap-1 items-start">
+                                            <label htmlFor="SHPFees">
+                                              SHipping Fees
+                                            </label>
+                                            <input
+                                              id="SHPFees"
+                                              placeholder="Shipping Fees"
+                                              type="number"
+                                              name="SHPFees"
+                                              value={item.SHPFees || "0"}
+                                              className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
+                                              onChange={(e) => {
+                                                const newPFIItems = [
+                                                  ...pfiData.PFIItems,
+                                                ];
+                                                newPFIItems[index].SHPFees =
+                                                  parseInt(e.target.value, 10);
+                                                setPFIDate({
+                                                  ...pfiData,
+                                                  PFIItems: newPFIItems,
+                                                });
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="flex flex-col gap-1 items-start">
+                                            <label htmlFor="price">Price</label>
+                                            <input
+                                              id="price"
+                                              placeholder="Price"
+                                              type="number"
+                                              name="price"
+                                              className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
+                                              value={item.price || ""}
+                                              onChange={(e) => {
+                                                const newPFIItems = [
+                                                  ...pfiData.PFIItems,
+                                                ];
+                                                newPFIItems[index].price =
+                                                  parseInt(e.target.value, 10);
+                                                setPFIDate({
+                                                  ...pfiData,
+                                                  PFIItems: newPFIItems,
+                                                });
+                                              }}
+                                            />
+                                          </div>
+                                        </div>
+                                      ))}{" "}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
                           )}
 
                           <DialogFooter>
-                            <button>Save changes</button>
+                            <form method="patch">
+                              <button
+                                disabled={isUpdatingPFI}
+                                onClick={handleUpdatePFI}
+                                className="px-5 py-2 bg-blue-900 rounded-md text-white transition-all duration-300 hover:bg-blue-500"
+                              >
+                                {isUpdatingPFI ? (
+                                  <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{
+                                      repeat: Infinity,
+                                      duration: 1,
+                                      ease: "linear",
+                                    }}
+                                    style={{
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    <Loader className="text-white" />
+                                  </motion.div>
+                                ) : (
+                                  "Save Changes"
+                                )}
+                              </button>
+                            </form>
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
@@ -812,7 +1321,18 @@ export function PFIReview() {
             </tbody>
           </table>
         )}
-        <Pagination />
+        <hr className="border-neutral-400" />
+        <div className="flex justify-between items-center mt-2">
+          <div className="flex items-center gap-2">
+            <input
+              value={selectedRows.length}
+              onChange={(event) => event.target.value}
+              className="w-10 pl-3 border rounded-md shadow"
+            />
+            <p className="">row selected</p>
+          </div>
+          <Pagination />
+        </div>
       </div>
       <h1 className="text-center text-sm text-neutral-400 mb-2">
         @2024 ApexBuild, Benchmark - All rights reserved

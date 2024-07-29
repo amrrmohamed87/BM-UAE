@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import PFI from "@/forms/PFI";
+import PFIRequest from "@/forms/PFIRequest";
 import POCreation from "@/forms/POCreation";
 
 export function OrderEntry() {
@@ -614,7 +614,7 @@ export function OrderEntry() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <PFI />
+                <PFIRequest />
               </CardContent>
               <CardFooter></CardFooter>
             </Card>
