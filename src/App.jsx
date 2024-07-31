@@ -16,7 +16,6 @@ import AddUsers from "./pages/AddUsers";
 import AddItems from "./pages/AddItems";
 import PFIRequest from "./CAP/PFI/PFIRequest";
 import PFIReview from "./CAP/PFI/PFIReview";
-import POCreation from "./CAP/PO/POCreation";
 
 import CAPInvoice from "./CAP/CAPInvoice/CAPInvoice";
 import POArchive from "./CAP/PO/POArchive";
