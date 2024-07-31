@@ -12,7 +12,7 @@ const Pagination = ({
   totalPages,
   setCurrentPage,
 }) => (
-  <div className="flex items-center gap-6">
+  <div className="flex flex-col md:flex-row items-center gap-6">
     <div className="flex items-center gap-1">
       <p>Rows per Page:</p>
       <input
