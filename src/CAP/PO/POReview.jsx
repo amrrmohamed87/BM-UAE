@@ -3,6 +3,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArchiveRestore,
   ArrowRight,
   Box,
   ChevronDown,
@@ -45,142 +46,113 @@ import {
 import { Link } from "react-router-dom";
 import { exportToPDF, exportToExcel } from "@/utils/ExcelPDF";
 import { printPO } from "@/utils/Print";
+import { handleCreateMethods } from "@/utils/Create";
+import { usePO } from "@/hooks/usePO";
+import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
+import { PageHeader } from "@/components/PageHeader";
+import Filter from "@/components/Filter";
+import Pagination from "@/components/Pagination";
+import POTable from "@/tables/POTable";
 
 export function POReview() {
-  /**
-   * useState hook to manage data
-   * 1- createdPOs
-   * 2- isLoadingCreatedPOs
-   * 3- uniqueCustomerNameOptions
-   * 4- uniqueCustomerNameQueue
-   * 3- uniqueCAPIDOptions
-   * 4- uniqueCAPIDQueue
-   * 5- uniqueSERIALOptions
-   * 6- uniqueSERIALQueue
-   * 7- uniqueDateOptions
-   * 8- uniqueDataQueue
-   * ------------------------
-   * 9- filterCreatedPOTable
-   * 10- rowsPerPage
-   * 11- currentPage
-   * ---------------------
-   * 12- isConfirmingCapOrder
-   * 13- selectedRows
-   *
-   */
-
-  const [createdPOs, setCreatedPOs] = useState([]);
-  const [isLoadingCreatedPOs, setIsLoadingCreatedPOs] = useState(false);
-
-  const [uniqueCustomerNameOptions, setUniqueCustomerNameOptions] = useState(
-    []
-  );
-  const [uniqueCustomerNameQueue, setUniqueCustomerNameQueue] = useState("");
-
-  const [uniqueCAPIDOptions, setUniqueCAPIDOptions] = useState([]);
-  const [uniqueCAPIDQueue, setUniqueCAPIDQueue] = useState("");
-
-  const [uniqueSERIALOptions, setUniqueSERIALOptions] = useState([]);
-  const [uniqueSERIALQueue, setUniqueSERIALQueue] = useState("");
-
-  const [uniqueDateOptions, setUniqueDateOptions] = useState([]);
-  const [uniqueDataQueue, setUniqueDataQueue] = useState("");
-
-  const [filterCreatedPOTable, setFilterCreatedPOTable] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(4);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  console.log(createdPOs);
-
-  const [orderConfirmationData, setorderConfirmationData] = useState({
-    POId: "",
-    orderConfirmationNo: "",
-  });
-
-  const [isConfirmingCapOrder, setIsConfirmingCapOrder] = useState(false);
-  const [selectedRows, setSelectedRows] = useState([]);
-
-  /**
-   * useEffect fucntions to fetch data
-   * 1- fetch createdPOs
-   *
-   */
-
-  useEffect(() => {
-    async function fetchCreatedPOs() {
-      setIsLoadingCreatedPOs(true);
-
-      try {
-        const response = await fetch(
-          "https://benchmark-innovation-production.up.railway.app/api/po"
-        );
-        const resData = await response.json();
-
-        if (!response.ok) {
-          toast.error(resData.message);
-          setIsLoadingCreatedPOs(false);
-          return;
-        }
-
-        setCreatedPOs(resData.data);
-
-        const uniqueCustomerName = [
-          ...new Set(
-            resData.data.flatMap((po) =>
-              po.PFI.map((pfi) => pfi.Customer.customerName)
-            )
-          ),
-        ].map((customer) => ({
-          label: customer,
-          value: customer,
-        }));
-        setUniqueCustomerNameOptions(uniqueCustomerName);
-
-        const uniqueCAPID = [
-          ...new Set(
-            resData.data.flatMap((po) =>
-              po.PFI.map((pfi) => pfi.Customer.customerCapIdNo)
-            )
-          ),
-        ].map((cap) => ({
-          label: cap,
-          value: cap,
-        }));
-        setUniqueCAPIDOptions(uniqueCAPID);
-
-        const uniqueSERIAL = [
-          ...new Set(resData.data.map((po) => po.SERIAL)),
-        ].map((serial) => ({
-          label: serial,
-          value: serial,
-        }));
-        setUniqueSERIALOptions(uniqueSERIAL);
-
-        const uniqueDates = [
-          ...new Set(resData.data.map((date) => formatDate(date.createdAt))),
-        ].map((date) => ({
-          label: date,
-          value: date,
-        }));
-        setUniqueDateOptions(uniqueDates);
-
-        setIsLoadingCreatedPOs(false);
-      } catch (error) {
-        toast.error(error.message);
-        setIsLoadingCreatedPOs(false);
-        return;
-      }
-    }
-    fetchCreatedPOs();
-  }, []);
+  const {
+    createdPOs,
+    isLoadingCreatedPOs,
+    uniqueCustomerNameOptions,
+    uniqueCustomerNameQueue,
+    setUniqueCustomerNameQueue,
+    uniqueCAPIDOptions,
+    uniqueCAPIDQueue,
+    setUniqueCAPIDQueue,
+    uniqueDateOptions,
+    uniqueDataQueue,
+    setUniqueDataQueue,
+    filterCreatedPOTable,
+    setFilterCreatedPOTable,
+    rowsPerPage,
+    setRowsPerPage,
+    currentPage,
+    setCurrentPage,
+    orderConfirmationData,
+    setorderConfirmationData,
+    isConfirmingCapOrder,
+    setIsConfirmingCapOrder,
+    selectedRows,
+    setSelectedRows,
+    reloadTable,
+    setReloadTable,
+    formatDate,
+    isArchivingPO,
+    setIsArchivingPO,
+    isDeletingPO,
+    setIsDeletingPO,
+  } = usePO("poReview");
 
   /**
    * Sendind Data to APIs
    * 1- handleConfirmCapOrder
+   * 2- handleConfirmCapOrder
    */
 
-  const handleConfirmCapOrder = async () => {};
+  const handleArchiveOrDeletePFIs = async (endPoint, setIsLoadingState) => {
+    const pfiIds = {
+      ids: selectedRows.map((row) => row.id),
+    };
 
+    await handleArchiveRestoreOrDeleteData(
+      pfiIds,
+      endPoint,
+      setIsLoadingState,
+      setReloadTable,
+      reloadTable,
+      setSelectedRows
+    );
+  };
+
+  const handleConfirmCapOrder = async () => {
+    setIsConfirmingCapOrder(true);
+    const data = {
+      ...orderConfirmationData,
+      orderConfirmationNo: parseInt(
+        orderConfirmationData.orderConfirmationNo,
+        10
+      ),
+    };
+
+    try {
+      const response = await fetch(
+        "https://benchmark-innovation-production.up.railway.app/api/cap-confirmation",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        toast.error(resData.message);
+        setIsConfirmingCapOrder(false);
+        return;
+      }
+
+      toast.success("CAP Order Confirmed Successfully");
+      setReloadTable(!reloadTable);
+      setorderConfirmationData({
+        POId: "",
+        orderConfirmationNo: "",
+      });
+      setSelectedRows([]);
+      setIsConfirmingCapOrder(false);
+    } catch (error) {
+      toast.error(error.message);
+      setIsConfirmingCapOrder(false);
+      return;
+    }
+  };
   /**
    * handleOnChange functions
    * 1- handleRowsPerPage
@@ -211,36 +183,26 @@ export function POReview() {
    * 4- currentData
    */
 
-  function formatDate(dateString) {
-    if (!dateString) return "N/A";
-
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    });
-  }
-
   const filteredPOs = createdPOs.filter(
     (po) =>
       (!uniqueCAPIDQueue ||
         po.PFI.some(
           (pfi) =>
+            pfi.Customer.customerCapIdNo &&
             pfi.Customer.customerCapIdNo.toString().toLowerCase() ===
-            uniqueCAPIDQueue.toString().toLowerCase()
+              uniqueCAPIDQueue.toString().toLowerCase()
         )) &&
       (!uniqueCustomerNameQueue ||
         po.PFI.some(
           (pfi) =>
+            pfi.Customer.customerName &&
             pfi.Customer.customerName.toLowerCase() ===
-            uniqueCustomerNameQueue.toLowerCase()
+              uniqueCustomerNameQueue.toLowerCase()
         )) &&
-      (!uniqueSERIALQueue ||
-        po.SERIAL.toLowerCase() === uniqueSERIALQueue.toLowerCase()) &&
       (!uniqueDataQueue ||
-        formatDate(po.createdAt).toLowerCase() ===
-          uniqueDataQueue.toLowerCase())
+        (po.createdAt &&
+          formatDate(po.createdAt).toLowerCase() ===
+            uniqueDataQueue.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredPOs.length / rowsPerPage);
@@ -255,148 +217,45 @@ export function POReview() {
    * 1- Pagination
    */
 
-  const Pagination = () => {
-    return (
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-1">
-          <p>Rows per Page:</p>
-          <input
-            type="number"
-            value={rowsPerPage}
-            onChange={handleRowsPerPage}
-            className="w-12 pl-3 border-2 rounded-md"
-          />
-        </div>
-        <p>
-          Page {currentPage} of {totalPages}
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            className="px-2 py-1 rounded-md border-2 bg-[#93C572] transition-all duration-200 hover:bg-blue-600"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(1)}
-          >
-            <ChevronsLeft size={20} className="text-white" />
-          </button>
-          <button
-            className="px-2 py-1 rounded-md border-2 bg-[#93C572] transition-all duration-300 hover:bg-blue-600"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => prev - 1)}
-          >
-            <ChevronLeft size={20} className="text-white" />
-          </button>
-          <button
-            className="px-2 py-1 rounded-md border-2 bg-[#93C572] transition-all duration-300 hover:bg-blue-600"
-            disabled={currentPage >= totalPages}
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-          >
-            <ChevronRight size={20} className="text-white" />
-          </button>
-          <button
-            className="px-2 py-1 rounded-md border-2 bg-[#93C572] transition-all duration-300 hover:bg-blue-600"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(totalPages)}
-          >
-            <ChevronsRight size={20} className="text-white" />
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  console.log(selectedRows);
-
   const handlePrintPDF = () => {
     const columns = ["Customer", "CAP ID", "Quote #", "PFI Value"];
-    printPO(
-      selectedRows.map((row) => ({
-        Customer: row.PFI.map((pfi) => pfi.Customer.customerName),
-        "CAP ID": row.PFI.map((pfi) => pfi.Customer.customerCapIdNo),
-        "Quote #": row.PFI.map((pfi) => pfi.PFIValue),
-        "PFI Value": row.PFI.map((pfi) => `$ ${pfi.PFIValue}`),
-      })),
-      columns
+
+    const data = createdPOs.flatMap((po) =>
+      po.PFI.map((pfi) => ({
+        Customer: pfi.Customer.customerName,
+        "CAP ID": pfi.Customer.customerCapIdNo,
+        "Quote #": pfi.PFINo,
+        "PFI Value": `$ ${pfi.PFIValue}`,
+      }))
     );
+
+    printPO(data, columns);
     toast.success("POBMI-CAP-Invoice Successfully Downloaded");
-    setSelectedRows([]);
   };
 
   return (
     <section className="bg-[#f5f5f5] flex flex-col p-10 ml-20 w-full gap-5">
-      <div className="flex flex-col gap-3 md:flex-row justify-center md:justify-start items-center md:gap-12">
-        <div>
-          <h1 className="text-3xl text-neutral-900">Purchase Orders Review</h1>
-          <p className="text-md text-neutral-500 mt-2">
-            Review all created POs and edit them through the following table.
-          </p>
-        </div>
-
-        <div className="bg-white p-2 border shadow-md rounded-md w-80">
-          <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
-            <ShoppingBag size={20} className="text-blue-700" /> Total POs
-          </h1>
-          <div className="mb-3 text-neutral-900 font-semibold text-[28px]">
-            {isLoadingCreatedPOs ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 1,
-                  ease: "linear",
-                }}
-                style={{ display: "inline-block" }}
-              >
-                <Loader className="text-black" />
-              </motion.div>
-            ) : (
-              createdPOs.length
-            )}
-          </div>
-          <Link
-            to="/CAP-pfi-review"
-            className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"
-          >
-            New PO <ArrowRight size={16} className="mt-1" />
-          </Link>
-        </div>
-
-        <div className="bg-white p-4 border shadow-md rounded-md w-80">
-          <h1 className="flex items-center gap-1 text-[16px] text-neutral-400 mb-2">
-            <Box size={20} className="text-blue-700" /> Orders
-          </h1>
-          <div className="mb-3 text-neutral-900 font-semibold text-[18px]">
-            you can check all orders
-          </div>
-          <Link
-            to="/CAP-confirmation-review"
-            className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"
-          >
-            View orders <ArrowRight size={16} className="mt-1" />
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Purchase Orders Review"
+        subTitle="Review all created POs and edit them through the following table."
+        data={createdPOs}
+        isLoadingState={isLoadingCreatedPOs}
+        cardOneTitle="Total POs"
+        iconOne={<ShoppingBag size={20} className="text-blue-700" />}
+        cardOneTextLink="New Purchase Order"
+        cardOneLink="/CAP-pfi-review"
+        cardTwoTitle="Archived purchase orders"
+        iconTwo={<ArchiveRestore size={20} className="text-blue-700" />}
+        cardTwoTextLink="Archive"
+        cardTwoLink="/CAP-po-archive"
+      />
 
       <div className="flex flex-col w-full my-6 bg-white border shadow rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => {
-              setFilterCreatedPOTable(!filterCreatedPOTable);
-            }}
-            className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500"
-          >
-            Filter
-            <motion.span
-              animate={{ rotate: filterCreatedPOTable ? -180 : 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              <ChevronDown size={20} />
-            </motion.span>
-          </button>
-
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col justify-start gap-3">
             <Dialog>
               <DialogTrigger asChild>
-                <button className="flex justify-center items-center gap-1 px-10 py-2 bg-neutral-800 text-white rounded-md transition-all duration-300 hover:bg-neutral-500">
+                <button className="flex justify-center items-center gap-1 px-10 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500">
                   DownLoad <Download size={18} />
                 </button>
               </DialogTrigger>
@@ -420,346 +279,34 @@ export function POReview() {
               </DialogContent>
             </Dialog>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button className="px-10 py-2 bg-neutral-800 rounded-md text-white transition-all duration-300 hover:bg-neutral-500">
-                  {isConfirmingCapOrder ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1,
-                        ease: "linear",
-                      }}
-                      style={{
-                        display: "inline-block",
-                      }}
-                    >
-                      <Loader className="text-white" />
-                    </motion.div>
-                  ) : (
-                    <div className="flex gap-2 items-center">
-                      Print
-                      <Printer className="text-white" size={18} />
-                    </div>
-                  )}
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will create PO for those
-                    PFIs.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setSelectedRows([])}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <form method="post">
-                    <AlertDialogAction onClick={handlePrintPDF}>
-                      Confirm
-                    </AlertDialogAction>
-                  </form>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {filterCreatedPOTable && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.4 }}
-              style={{ overflow: "hidden" }}
-              className="flex justify-between gap-6 mt-4"
-            >
-              <Select
-                options={uniqueCustomerNameOptions}
-                value={uniqueCustomerNameOptions.find(
-                  (option) => option.value === uniqueCustomerNameQueue
-                )}
-                onChange={(option) => {
-                  setUniqueCustomerNameQueue(option && option.value);
-                }}
-                isClearable
-                className="w-full custom-select"
-                classNamePrefix="reac-select"
-                menuPortalTarget={document.body}
-                styles={{
-                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                }}
-                placeholder="Customer Name"
-              />
-              <Select
-                options={uniqueCAPIDOptions}
-                value={uniqueCAPIDOptions.find(
-                  (option) => option.value === uniqueCAPIDQueue
-                )}
-                onChange={(option) => {
-                  setUniqueCAPIDQueue(option && option.value);
-                }}
-                isClearable
-                className="w-full custom-select"
-                classNamePrefix="reac-select"
-                menuPortalTarget={document.body}
-                styles={{
-                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                }}
-                placeholder="CAP - ID"
-              />
-              <Select
-                options={uniqueDateOptions}
-                value={uniqueDateOptions.find(
-                  (option) => option.value === uniqueDataQueue
-                )}
-                onChange={(option) => {
-                  setUniqueDataQueue(option && option.value);
-                }}
-                isClearable
-                className="w-full custom-select"
-                classNamePrefix="reac-select"
-                menuPortalTarget={document.body}
-                styles={{
-                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                }}
-                placeholder="Item Name"
-              />
-              <Select
-                options={uniqueSERIALOptions}
-                value={uniqueSERIALOptions.find(
-                  (option) => option.value === uniqueSERIALQueue
-                )}
-                onChange={(option) => {
-                  setUniqueSERIALQueue(option && option.value);
-                }}
-                isClearable
-                className="w-full custom-select"
-                classNamePrefix="reac-select"
-                menuPortalTarget={document.body}
-                styles={{
-                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                }}
-                placeholder="PFI - Serial"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {isLoadingCreatedPOs ? (
-          <h1 className="text-center text-[24px] mt-8 flex items-center gap-2 justify-center">
-            Please Wait Requested PFIs Are Loading
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{
-                repeat: Infinity,
-                duration: 1,
-                ease: "linear",
+            <button
+              onClick={() => {
+                setFilterCreatedPOTable(!filterCreatedPOTable);
               }}
-              style={{ display: "inline-block" }}
+              className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500"
             >
-              <Loader className="text-black" />
-            </motion.div>
-          </h1>
-        ) : createdPOs.length <= 0 ? (
-          <h1 className="text-center text-[24px] mt-8">NO POs FOUND.</h1>
-        ) : (
-          <table className="min-w-full divide-y divide-neutral-900 mt-2">
-            <thead className="bg-gray-200">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                >
-                  POs
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                >
-                  Customer Name
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                >
-                  CAP - Id
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                >
-                  Serial
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                >
-                  Created At
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-neutral-800 tracking-wider"
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-neutral-800">
-              {currentData.map((po, index) => (
-                <tr
-                  key={index}
-                  className={`transition-all duration-150 hover:bg-gray-100 ${
-                    selectedRows.includes(po) ? "bg-neutral-300" : "bg-white"
-                  }`}
-                >
-                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                    <label className="relative flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        onChange={(event) => handleCheckboxChange(event, po)}
-                        checked={selectedRows.includes(po)}
-                        className="sr-only"
-                      />
-                      <div className="w-6 h-6 bg-white border rounded-md flex-shrink-0 flex items-center justify-center transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:bg-blue-100 hover:border-blue-300">
-                        {selectedRows.includes(po) && (
-                          <svg
-                            className="w-4 h-4 text-black"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </div>
-                    </label>
-                  </td>
-                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                    {po.PFI.length > 1
-                      ? po.PFI.map((pfi) => pfi.Customer.customerName).join(
-                          ", "
-                        )
-                      : po.PFI.map((pfi) => pfi.Customer.customerName)}
-                  </td>
-                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                    {po.PFI.length > 1
-                      ? po.PFI.map((pfi) => pfi.Customer.customerCapIdNo).join(
-                          ", "
-                        )
-                      : po.PFI.map((pfi) => pfi.Customer.customerCapIdNo)}
-                  </td>
-                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                    {po.SERIAL}
-                  </td>
-                  <td className="px-4 py-6 whitespace-normal text-sm font-medium text-gray-900">
-                    {formatDate(po.createdAt)}
-                  </td>
-                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                    <div className="flex items-center gap-4">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <button>
-                            <Trash size={18} className="text-red-500" />
-                          </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Are you absolutely sure?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will archive
-                              this PFI and store its data in the archive table.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <form method="delete">
-                              <AlertDialogAction>
-                                {isConfirmingCapOrder ? (
-                                  <motion.div
-                                    animate={{ rotate: 360 }}
-                                    transition={{
-                                      repeat: Infinity,
-                                      duration: 1,
-                                      ease: "linear",
-                                    }}
-                                    style={{
-                                      display: "inline-block",
-                                    }}
-                                  >
-                                    <Loader className="text-white" />
-                                  </motion.div>
-                                ) : (
-                                  "Archive"
-                                )}
-                              </AlertDialogAction>
-                            </form>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <button>
-                            <Edit size={18} className="text-blue-500" />
-                          </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Are you absolutely sure?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will archive
-                              this PFI and store its data in the archive table.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <form method="delete">
-                              <AlertDialogAction>
-                                {isConfirmingCapOrder ? (
-                                  <motion.div
-                                    animate={{ rotate: 360 }}
-                                    transition={{
-                                      repeat: Infinity,
-                                      duration: 1,
-                                      ease: "linear",
-                                    }}
-                                    style={{
-                                      display: "inline-block",
-                                    }}
-                                  >
-                                    <Loader className="text-white" />
-                                  </motion.div>
-                                ) : (
-                                  "Archive"
-                                )}
-                              </AlertDialogAction>
-                            </form>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex gap-3 item-center">
+              Filter
+              <motion.span
+                animate={{ rotate: filterCreatedPOTable ? -180 : 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <ChevronDown size={20} />
+              </motion.span>
+            </button>
+          </div>
+
+          <div className="flex flex-col justify-start gap-4">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button className="px-5 py-2 bg-[#acd491] rounded-md text-white transition-all duration-300 hover:bg-blue-500">
+                <button
+                  onClick={() => {
+                    setorderConfirmationData((prev) => ({
+                      ...prev,
+                      POId: selectedRows.length > 0 ? selectedRows[0].id : "",
+                    }));
+                  }}
+                  className="px-5 py-2 bg-blue-900 rounded-md text-white transition-all duration-300 hover:bg-blue-500"
+                >
                   {isConfirmingCapOrder ? (
                     <motion.div
                       animate={{ rotate: 360 }}
@@ -803,7 +350,15 @@ export function POReview() {
                   </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setSelectedRows([])}>
+                  <AlertDialogCancel
+                    onClick={() => {
+                      setSelectedRows([]);
+                      setorderConfirmationData({
+                        POId: "",
+                        orderConfirmationNo: "",
+                      });
+                    }}
+                  >
                     Cancel
                   </AlertDialogCancel>
                   <form method="post">
@@ -815,15 +370,159 @@ export function POReview() {
               </AlertDialogContent>
             </AlertDialog>
 
-            <button className="px-5 py-2 bg-[#183902] rounded-md text-white transition-all duration-300 hover:bg-blue-500">
-              Archive
-            </button>
-            <button className="px-5 py-2 bg-[#93C572] rounded-md text-white transition-all duration-300 hover:bg-blue-500">
-              Delete
-            </button>
-          </div>
+            <div className="flex gap-3 item-center">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="px-7 py-2 bg-blue-900 rounded-md text-white transition-all duration-300 hover:bg-blue-500">
+                    {isArchivingPO ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 1,
+                          ease: "linear",
+                        }}
+                        style={{
+                          display: "inline-block",
+                        }}
+                      >
+                        <Loader className="text-white" />
+                      </motion.div>
+                    ) : (
+                      "Archive"
+                    )}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will restore those
+                      PFIs.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setSelectedRows([])}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <form method="delete">
+                      <AlertDialogAction
+                        onClick={() => {
+                          handleArchiveOrDeletePFIs(
+                            "https://benchmark-innovation-production.up.railway.app/api/po/soft",
+                            setIsArchivingPO
+                          );
+                        }}
+                      >
+                        Confirm
+                      </AlertDialogAction>
+                    </form>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
-          <Pagination />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="px-8 py-2 bg-blue-900 rounded-md text-white transition-all duration-300 hover:bg-blue-500">
+                    {isDeletingPO ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 1,
+                          ease: "linear",
+                        }}
+                        style={{
+                          display: "inline-block",
+                        }}
+                      >
+                        <Loader className="text-white" />
+                      </motion.div>
+                    ) : (
+                      "Delete"
+                    )}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will restore those
+                      PFIs.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setSelectedRows([])}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <form method="delete">
+                      <AlertDialogAction
+                        onClick={() => {
+                          handleArchiveOrDeletePFIs(
+                            "https://benchmark-innovation-production.up.railway.app/api/po",
+                            setIsDeletingPO
+                          );
+                        }}
+                      >
+                        Confirm
+                      </AlertDialogAction>
+                    </form>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {filterCreatedPOTable && (
+            <Filter
+              uniqueFirstOptions={uniqueCAPIDOptions}
+              uniqueFirstQueue={uniqueCAPIDQueue}
+              setUniqueFirstQueue={setUniqueCAPIDQueue}
+              firstPlaceHolder="CAP - ID"
+              uniqueSecondOptions={uniqueCustomerNameOptions}
+              uniqueSecondQueue={uniqueCustomerNameQueue}
+              setUniqueSecondQueue={setUniqueCustomerNameQueue}
+              secondPlaceHolder="Customer Name"
+              uniqueThirdOptions={uniqueDateOptions}
+              uniqueThirdQueue={uniqueDataQueue}
+              setUniqueThirdQueue={setUniqueDataQueue}
+              ThirdPlaceHolder="Issue Date"
+            />
+          )}
+        </AnimatePresence>
+
+        <POTable
+          isLoadingState={isLoadingCreatedPOs}
+          fetchedData={createdPOs}
+          currentData={currentData}
+          selectedRows={selectedRows}
+          handleCheckboxChange={handleCheckboxChange}
+          formatDate={formatDate}
+          handlePrintPO={handlePrintPDF}
+        />
+
+        <div className="flex justify-between items-center mt-4">
+          <div className="flex items-center gap-2">
+            <input
+              value={selectedRows.length}
+              onChange={(event) => event.target.value}
+              className="w-10 pl-3 border rounded-md shadow"
+            />
+            <p className="">row selected</p>
+          </div>
+          <Pagination
+            rowsPerPage={rowsPerPage}
+            handleRowsPerPage={handleRowsPerPage}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            totalPages={totalPages}
+          />
         </div>
       </div>
       <h1 className="text-center text-sm text-neutral-400 mb-2">
