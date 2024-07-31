@@ -27,6 +27,7 @@ const getCurrentDate = () => {
   )}, ${todaysDate.getFullYear()}`;
 };
 
+//! return it from the Database
 const getOrderNumber = () => {
   const index = parseInt(localStorage.getItem("orderNumber") || "0", 10) + 1;
   localStorage.setItem("orderNumber", index.toString());
