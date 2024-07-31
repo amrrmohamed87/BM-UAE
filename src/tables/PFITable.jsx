@@ -23,7 +23,6 @@ export const PFITable = ({
   isUpdatingPFI,
   updatedData,
   setUpdatedData,
-  setPFIDate,
   formateDate,
 }) => {
   return (
@@ -305,7 +304,7 @@ export const PFITable = ({
                                         {pfiData.PFIItems.map((item, index) => (
                                           <div
                                             key={index}
-                                            className=" bg-neutral-100 shadow border p-3 rounded-md"
+                                            className=" bg-neutral-100 shadow border p-3 rounded-md flex flex-col justify-center"
                                           >
                                             <h1 className="text-center mb-2">
                                               {item.Items.itemName}
@@ -323,6 +322,7 @@ export const PFITable = ({
                                                   ),
                                                 }))
                                               }
+                                              className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
                                             />
                                           </div>
                                         ))}
