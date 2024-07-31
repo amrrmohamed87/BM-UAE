@@ -38,8 +38,8 @@ import {
 import { exportToPDF, exportToExcel } from "@/utils/ExcelPDF";
 import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
 import { PageHeader } from "@/components/PageHeader";
-import PFIFilter from "@/filter/PFIFilter";
 import PFITable from "@/tables/PFITable";
+import Filter from "@/components/Filter";
 
 export function PFIReview() {
   const {
@@ -79,7 +79,7 @@ export function PFIReview() {
     setIsCreatingPO,
     isDeletingPFI,
     setIsDeletingPFI,
-  } = usePFIReview();
+  } = usePFIReview("reviewPFI");
 
   const handleArchiveOrDeletePFIs = async (endPoint, setIsLoadingState) => {
     const pfiIds = {
@@ -197,7 +197,6 @@ export function PFIReview() {
       (!uniquePFINoQueue ||
         pfi.PFINo.toLowerCase() === uniquePFINoQueue.toLowerCase())
   );
-
   const totalPages = Math.ceil(filteredPFIs.length / rowsPerPage);
 
   const currentData = filteredPFIs.slice(
@@ -550,7 +549,7 @@ export function PFIReview() {
 
         <AnimatePresence>
           {filterRequestedPFITable && (
-            <PFIFilter
+            <Filter
               uniqueFirstOptions={uniqueCAPIDOptions}
               uniqueFirstQueue={uniqueCAPIDQueue}
               setUniqueFirstQueue={setUniqueCAPIDQueue}

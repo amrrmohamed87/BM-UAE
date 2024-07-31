@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
-export const usePFIReview = () => {
+export const usePFIReview = (pageType) => {
      /**
       * useState hook to manage data
       */
@@ -71,67 +71,69 @@ export const usePFIReview = () => {
    */
 
   useEffect(() => {
-    async function fetchRequestedPFIs() {
-      setIsLoadingRequestedPFIs(true);
-
-      try {
-        const response = await fetch(
-          "https://benchmark-innovation-production.up.railway.app/api/pfi"
-        );
-        const resData = await response.json();
-
-        if (!response.ok) {
-          toast.error(resData.message);
+    if (pageType === 'reviewPFI') {
+      async function fetchRequestedPFIs() {
+        setIsLoadingRequestedPFIs(true);
+  
+        try {
+          const response = await fetch(
+            "https://benchmark-innovation-production.up.railway.app/api/pfi"
+          );
+          const resData = await response.json();
+  
+          if (!response.ok) {
+            toast.error(resData.message);
+            setIsLoadingRequestedPFIs(false);
+            return;
+          }
+  
+          setRequestedPFIs(resData.data);
+  
+          const uniqueCAPID = [
+            ...new Set(resData.data.map((cap) => cap.Customer.customerCapIdNo)),
+          ].map((cap) => ({
+            label: cap,
+            value: cap,
+          }));
+          setUniqueCAPIDOptions(uniqueCAPID);
+  
+          const uniquePFINo = [
+            ...new Set(resData.data.map((pfi) => pfi.PFINo)),
+          ].map((PFINo) => ({
+            label: PFINo,
+            value: PFINo,
+          }));
+          setUniquePFINoOptions(uniquePFINo);
+  
+          const uniqueSERIAL = [
+            ...new Set(resData.data.map((serial) => serial.SERIAL)),
+          ].map((serial) => ({
+            label: serial,
+            value: serial,
+          }));
+          setUniqueSERIALOptions(uniqueSERIAL);
+  
+          const uniqueItems = [
+            ...new Set(
+              resData.data.flatMap((item) =>
+                item.PFIItems.map((itemName) => itemName.Items.itemName)
+              )
+            ),
+          ].map((items) => ({
+            label: items,
+            value: items,
+          }));
+          setUniqueItemsOptions(uniqueItems);
+  
+          setIsLoadingRequestedPFIs(false);
+        } catch (error) {
+          toast.error(error.message);
           setIsLoadingRequestedPFIs(false);
           return;
         }
-
-        setRequestedPFIs(resData.data);
-
-        const uniqueCAPID = [
-          ...new Set(resData.data.map((cap) => cap.Customer.customerCapIdNo)),
-        ].map((cap) => ({
-          label: cap,
-          value: cap,
-        }));
-        setUniqueCAPIDOptions(uniqueCAPID);
-
-        const uniquePFINo = [
-          ...new Set(resData.data.map((pfi) => pfi.PFINo)),
-        ].map((PFINo) => ({
-          label: PFINo,
-          value: PFINo,
-        }));
-        setUniquePFINoOptions(uniquePFINo);
-
-        const uniqueSERIAL = [
-          ...new Set(resData.data.map((serial) => serial.SERIAL)),
-        ].map((serial) => ({
-          label: serial,
-          value: serial,
-        }));
-        setUniqueSERIALOptions(uniqueSERIAL);
-
-        const uniqueItems = [
-          ...new Set(
-            resData.data.flatMap((item) =>
-              item.PFIItems.map((itemName) => itemName.Items.itemName)
-            )
-          ),
-        ].map((items) => ({
-          label: items,
-          value: items,
-        }));
-        setUniqueItemsOptions(uniqueItems);
-
-        setIsLoadingRequestedPFIs(false);
-      } catch (error) {
-        toast.error(error.message);
-        setIsLoadingRequestedPFIs(false);
-        return;
       }
+      fetchRequestedPFIs();
     }
-    fetchRequestedPFIs();
   }, [reloadTable]);
 
   useEffect(() => {
@@ -169,59 +171,61 @@ export const usePFIReview = () => {
 
 
   useEffect(() => {
-    async function loadArchivePFI() {
-      setIsLoadingArchivePFI(true);
-
-      try {
-        const response = await fetch(
-          "https://benchmark-innovation-production.up.railway.app/api/pfi/archive"
-        );
-        const resData = await response.json();
-
-        if (!response.ok) {
-          toast.error(resData.message);
+    if (pageType === 'archivePFI') {
+      async function loadArchivePFI() {
+        setIsLoadingArchivePFI(true);
+  
+        try {
+          const response = await fetch(
+            "https://benchmark-innovation-production.up.railway.app/api/pfi/archive"
+          );
+          const resData = await response.json();
+  
+          if (!response.ok) {
+            toast.error(resData.message);
+            setIsLoadingArchivePFI(false);
+            return;
+          }
+  
+          setArchivePFI(resData.data);
+  
+          const uniqueCAPID = [
+            ...new Set(resData.data.map((cap) => cap.Customer.customerCapIdNo)),
+          ].map((cap) => ({
+            label: cap,
+            value: cap,
+          }));
+          setUniqueArchivedCAPIDOptions(uniqueCAPID);
+  
+          const uniquePFINo = [
+            ...new Set(resData.data.map((pfi) => pfi.PFINo)),
+          ].map((PFINo) => ({
+            label: PFINo,
+            value: PFINo,
+          }));
+          setUniqueArchivedPFINoOptions(uniquePFINo);
+  
+          const uniqueItems = [
+            ...new Set(
+              resData.data.flatMap((item) =>
+                item.PFIItems.map((itemName) => itemName.Items.itemName)
+              )
+            ),
+          ].map((items) => ({
+            label: items,
+            value: items,
+          }));
+          setUniqueArchivedItemsOptions(uniqueItems);
+  
+          setIsLoadingArchivePFI(false);
+        } catch (error) {
+          toast.error(error.message);
           setIsLoadingArchivePFI(false);
           return;
         }
-
-        setArchivePFI(resData.data);
-
-        const uniqueCAPID = [
-          ...new Set(resData.data.map((cap) => cap.Customer.customerCapIdNo)),
-        ].map((cap) => ({
-          label: cap,
-          value: cap,
-        }));
-        setUniqueArchivedCAPIDOptions(uniqueCAPID);
-
-        const uniquePFINo = [
-          ...new Set(resData.data.map((pfi) => pfi.PFINo)),
-        ].map((PFINo) => ({
-          label: PFINo,
-          value: PFINo,
-        }));
-        setUniqueArchivedPFINoOptions(uniquePFINo);
-
-        const uniqueItems = [
-          ...new Set(
-            resData.data.flatMap((item) =>
-              item.PFIItems.map((itemName) => itemName.Items.itemName)
-            )
-          ),
-        ].map((items) => ({
-          label: items,
-          value: items,
-        }));
-        setUniqueArchivedItemsOptions(uniqueItems);
-
-        setIsLoadingArchivePFI(false);
-      } catch (error) {
-        toast.error(error.message);
-        setIsLoadingArchivePFI(false);
-        return;
       }
+      loadArchivePFI();
     }
-    loadArchivePFI();
   }, [reloadTable]);
 
 

@@ -48,8 +48,8 @@ import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
 import PFITable from "@/tables/PFITable";
 import { usePFIReview } from "@/hooks/usePFIReview";
 import Pagination from "@/components/Pagination";
-import PFIFilter from "@/filter/PFIFilter";
 import { PageHeader } from "@/components/PageHeader";
+import Filter from "@/components/Filter";
 
 export function PFIArchive() {
   const [isDownloadingExcel, setIsDownloadingExcel] = useState(false);
@@ -81,7 +81,7 @@ export function PFIArchive() {
     setSelectedRows,
     isDeletingPFI,
     setIsDeletingPFI,
-  } = usePFIReview();
+  } = usePFIReview("archivePFI");
 
   /**
    * Send Data to APIs
@@ -267,7 +267,7 @@ export function PFIArchive() {
   return (
     <section className="bg-[#F5F5F5] flex flex-col p-10 ml-20 w-full gap-5">
       <PageHeader
-        title="Proforma Archived"
+        title="Proforma Archive"
         subTitle=" Review all archived PFIs and restore or delete them through the following table."
         isLoadingState={isLoadingArchivePFI}
         data={archivePFI}
@@ -472,7 +472,7 @@ export function PFIArchive() {
 
         <AnimatePresence>
           {filterRequestedPFITable && (
-            <PFIFilter
+            <Filter
               uniqueFirstOptions={uniqueArchivedCAPIDOptions}
               uniqueFirstQueue={uniqueArchivedCAPIDQueue}
               setUniqueFirstQueue={setUniqueArchivedCAPIDQueue}
