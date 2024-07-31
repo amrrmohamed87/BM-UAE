@@ -328,7 +328,7 @@ export function PFIReview() {
   };
 
   return (
-    <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
+    <section className="bg-[#f8fcff] flex flex-col p-8 md:p-10 ml-20 mr-10 w-full gap-5">
       <PageHeader
         title="Proforma Review"
         subTitle=" Review all requested PFIs and edit them through the following table."
@@ -345,11 +345,11 @@ export function PFIReview() {
       />
 
       <div className="flex flex-col w-full my-6 bg-white border shadow rounded-lg p-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col md:flex-row justify-start md:justify-between gap-3 items-center mb-4">
           <div className="flex flex-col gap-4 items-start">
             <Dialog>
               <DialogTrigger asChild>
-                <button className="flex justify-center items-center gap-1 px-10 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500">
+                <button className="flex justify-center w-full items-center gap-1 px-10 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500">
                   DownLoad <Download size={18} />
                 </button>
               </DialogTrigger>
@@ -383,7 +383,7 @@ export function PFIReview() {
               onClick={() => {
                 setFilterRequestedPFITable(!filterRequestedPFITable);
               }}
-              className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500"
+              className="flex justify-center items-center gap-1 w-full md:w-[110px] px-3 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500"
             >
               Filter
               <motion.span
@@ -586,7 +586,7 @@ export function PFIReview() {
 
         <hr className="border-neutral-400" />
 
-        <div className="flex justify-between items-center mt-2">
+        <div className="flex flex-col justify-center gap-3 md:flex-row md:justify-between items-center mt-4 md:mt-2">
           <div className="flex items-center gap-2">
             <input
               value={selectedRows.length}
