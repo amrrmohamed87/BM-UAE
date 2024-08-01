@@ -16,6 +16,8 @@ import {
   DollarSign,
   BadgePlus,
   BringToFront,
+  FileText,
+  FileStack,
 } from "lucide-react";
 
 import {
@@ -33,6 +35,8 @@ import {
 import { useSubmit } from "react-router-dom";
 import FormLinks from "@/data/FormLinks";
 import { FormNavigations } from "@/data/FormNavigations";
+import TritonLinks from "@/data/TritonLinks";
+import TritonNavigations from "@/data/TritonNavigations";
 
 const sidebarVariants = {
   close: {
@@ -89,6 +93,7 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [externalBarIsOpened, setExternalBarIsOpened] = useState(false);
   const [selectedForm, setSelectedForm] = useState(null);
+  const [tritonSidebarIsOpened, setTritonSidebarIsOpened] = useState(false);
 
   const sidebarControls = useAnimationControls();
   const svgControls = useAnimationControls();
@@ -131,7 +136,7 @@ export function Sidebar() {
         variants={sidebarVariants}
         initial="close"
         animate={sidebarControls}
-        className="bg-white flex flex-col z-10 gap-16 p-5 fixed top-0 left-0 h-full border shadow-md"
+        className="bg-white flex flex-col z-10 gap-12 p-5 fixed top-0 left-0 h-full border shadow-md"
       >
         <div className="flex flex-row w-full justify-between place-items-center">
           <motion.img
@@ -177,7 +182,7 @@ export function Sidebar() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <NavigationLinks
             closeSidebar={() => {
               setIsOpen(false);
@@ -247,23 +252,37 @@ export function Sidebar() {
         </div>
 
         <div
-          className="flex flex-col gap-3 flex-grow"
+          className="flex flex-col"
           onClick={() => {
             setExternalBarIsOpened(!externalBarIsOpened);
+            setTritonSidebarIsOpened(false);
           }}
         >
           <FormLinks
-            onCLose={() => {
-              setExternalBarIsOpened(!externalBarIsOpened);
-            }}
             name="CAP Operations"
             setSelectedForm={setSelectedForm}
             isOpen={externalBarIsOpened}
-            isClosed={externalBarIsOpened}
             textOverflow={isOpen}
           >
             <BringToFront className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
           </FormLinks>
+        </div>
+
+        <div
+          className="flex flex-col gap-3 flex-grow"
+          onClick={() => {
+            setTritonSidebarIsOpened(!tritonSidebarIsOpened);
+            setExternalBarIsOpened(false);
+          }}
+        >
+          <TritonLinks
+            name="Triton Operations"
+            setSelectedForm={setSelectedForm}
+            isOpen={tritonSidebarIsOpened}
+            textOverflow={isOpen}
+          >
+            <FileStack className="stroke-inherit stroke-[0.75] min-w-8 w-8" />
+          </TritonLinks>
         </div>
 
         <div className="flex flex-col">
@@ -311,6 +330,23 @@ export function Sidebar() {
             isOpen={externalBarIsOpened}
             isClosed={() => {
               setExternalBarIsOpened(!externalBarIsOpened);
+            }}
+            sideBarIsOpen={isOpen}
+            closeOriginalSideBar={() => {
+              setIsOpen(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {tritonSidebarIsOpened && (
+          <TritonNavigations
+            selectedForm={selectedForm}
+            setSelectedForm={setSelectedForm}
+            isOpen={tritonSidebarIsOpened}
+            isClosed={() => {
+              setTritonSidebarIsOpened(!tritonSidebarIsOpened);
             }}
             sideBarIsOpen={isOpen}
             closeOriginalSideBar={() => {
