@@ -331,7 +331,7 @@ export function PFIReview() {
     <section className="bg-[#f8fcff] flex flex-col p-8 md:p-10 ml-20 mr-10 w-full gap-5">
       <PageHeader
         title="Proforma Review"
-        subTitle=" Review all requested PFIs and edit them through the following table."
+        subTitle="Review all requested PFIs and edit them through the following table."
         isLoadingState={isLoadingRequestedPFIs}
         data={requestedPFIs}
         cardOneTitle="Total Requests"
@@ -346,14 +346,14 @@ export function PFIReview() {
 
       <div className="flex flex-col w-full my-6 bg-white border shadow rounded-lg p-4">
         <div className="flex flex-col md:flex-row justify-start md:justify-between gap-3 items-center mb-4">
-          <div className="flex flex-col gap-4 items-start">
+          <div className="flex flex-col gap-3 items-start">
             <Dialog>
               <DialogTrigger asChild>
                 <button className="flex justify-center w-full items-center gap-1 px-10 py-2 bg-blue-900 text-white rounded-md transition-all duration-300 hover:bg-blue-500">
                   DownLoad <Download size={18} />
                 </button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Download Data</DialogTitle>
                   <DialogDescription className="mt-2">
@@ -363,18 +363,20 @@ export function PFIReview() {
                 </DialogHeader>
 
                 <DialogFooter className="mt-4">
-                  <button
-                    onClick={handleExportRequestedPFIToExcel}
-                    className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-emerald-700 text-white rounded-md transition-all duration-300 hover:bg-emerald-900"
-                  >
-                    Excel
-                  </button>
-                  <button
-                    onClick={handleExportRequestedPFIToPDF}
-                    className="flex justify-center items-center gap-1 w-[110px] px-3 py-2 bg-red-700 text-white rounded-md transition-all duration-300 hover:bg-red-900"
-                  >
-                    PDF
-                  </button>
+                  <div className="flex flex-col justify-center gap-3 items-center md:justify-end md:flex-row">
+                    <button
+                      onClick={handleExportRequestedPFIToExcel}
+                      className="flex justify-center items-center gap-1 w-full md:w-[110px] px-3 py-2 bg-emerald-700 text-white rounded-md transition-all duration-300 hover:bg-emerald-900"
+                    >
+                      Excel
+                    </button>
+                    <button
+                      onClick={handleExportRequestedPFIToPDF}
+                      className="flex justify-center items-center gap-1 w-full md:w-[110px] px-3 py-2 bg-red-700 text-white rounded-md transition-all duration-300 hover:bg-red-900"
+                    >
+                      PDF
+                    </button>
+                  </div>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

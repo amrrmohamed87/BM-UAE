@@ -32,7 +32,6 @@ const variants = {
 export function FormNavigations({
   selectedForm,
   isOpen,
-  setSelectedForm,
   isClosed,
   sideBarIsOpen,
   closeOriginalSideBar,
@@ -128,16 +127,6 @@ export function FormNavigations({
             isClosed();
             closeOriginalSideBar();
           }}
-          name="CAP - Confirmation"
-          link="/CAP-confiramtion"
-        >
-          <HandCoins className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
-        </NavigationLinks>
-        <NavigationLinks
-          closeSidebar={() => {
-            isClosed();
-            closeOriginalSideBar();
-          }}
           name="CAP - Review"
           link="/CAP-confirmation-review"
         >
@@ -179,7 +168,7 @@ export function FormNavigations({
             isClosed();
             closeOriginalSideBar();
           }}
-          name="CAP - Invoice"
+          name="Invoice - Archive"
           link="/CAP-invoice-archive"
         >
           <ArchiveRestore className="stroke-[0.75] stroke-inherit min-w-8 w-8" />

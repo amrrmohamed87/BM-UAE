@@ -19,7 +19,6 @@ import PFIReview from "./CAP/PFI/PFIReview";
 
 import CAPInvoice from "./CAP/CAPInvoice/CAPInvoice";
 import POArchive from "./CAP/PO/POArchive";
-import CAPOrderConfirmation from "./CAP/CAPConfirmation/CAPOrderConfirmation";
 import CAPReview from "./CAP/CAPConfirmation/CAPReview";
 import CAPArchive from "./CAP/CAPConfirmation/CAPArchive";
 import InvoiceReview from "./CAP/CAPInvoice/InvoiceReview";
@@ -74,10 +73,6 @@ function App() {
         {
           path: "/CAP-po-archive",
           element: <POArchive />,
-        },
-        {
-          path: "/CAP-confiramtion",
-          element: <CAPOrderConfirmation />,
         },
         {
           path: "/CAP-confirmation-review",
