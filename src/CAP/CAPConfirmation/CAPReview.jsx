@@ -48,6 +48,8 @@ export function CAPReview() {
     setIsDeletingOrder,
     isCreatingInvoice,
     setIsCreatingInvoice,
+    isSwift,
+    setIsSwift,
   } = useCAPConfirmation("reviewOrders");
 
   return (
@@ -144,6 +146,44 @@ export function CAPReview() {
                     This action cannot be undone. This will create Invoice for
                     this Order.
                   </AlertDialogDescription>
+
+                  <div className="flex flex-col justify-center">
+                    <input
+                      placeholder="CAP Invoice Number"
+                      type="number"
+                      name="Cap Invoice Number"
+                      className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
+                    />
+
+                    <div>
+                      <button
+                        className="border px-6 py-1 shadow  rounded-md mb-2 transition-all duration-300 hover:text-blue-500"
+                        type="button"
+                        onClick={() => setIsSwift(!isSwift)}
+                      >
+                        Swift
+                      </button>
+                    </div>
+
+                    <AnimatePresence>
+                      {isSwift && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.4 }}
+                          style={{ overflow: "hidden" }}
+                        >
+                          <input
+                            placeholder="Swift Number"
+                            type="number"
+                            name="Swift Number"
+                            className="w-full p-1 mb-4 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel onClick={() => setSelectedRows([])}>
