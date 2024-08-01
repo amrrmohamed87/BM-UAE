@@ -25,6 +25,9 @@ import InvoiceReview from "./CAP/CAPInvoice/InvoiceReview";
 import InvoiceArchive from "./CAP/CAPInvoice/InvoiceArchive";
 import POReview from "./CAP/PO/POReview";
 import PFIArchive from "./CAP/PFI/PFIArchive";
+import TritonPrepare from "./Triton/Prepare/TritonPrepare";
+import PrepareReview from "./Triton/Prepare/PrepareReview";
+import PrepareArchive from "./Triton/Prepare/PrepareArchive";
 function App() {
   //const location = useLocation();
   const isAuthenticated = localStorage.getItem("token");
@@ -93,6 +96,18 @@ function App() {
         {
           path: "/CAP-invoice-archive",
           element: <InvoiceArchive />,
+        },
+        {
+          path: "/Triton-prepare",
+          element: <TritonPrepare />,
+        },
+        {
+          path: "/Triton-prepare-review",
+          element: <PrepareReview />,
+        },
+        {
+          path: "/Triton-prepare-archive",
+          element: <PrepareArchive />,
         },
         {
           path: "/supply-chain",
