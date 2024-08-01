@@ -53,7 +53,7 @@ export function CAPReview() {
   } = useCAPConfirmation("reviewOrders");
 
   return (
-    <section className="bg-[#F5F5F5] flex flex-col p-10 ml-20 w-full gap-5">
+    <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
       <PageHeader
         title="Confirmed CAP Orders Review"
         subTitle="Review all confirmed orders and edit, archive, delete, or extract data them through the following table."

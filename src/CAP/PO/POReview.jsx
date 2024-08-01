@@ -233,7 +233,7 @@ export function POReview() {
   };
 
   return (
-    <section className="bg-[#f5f5f5] flex flex-col p-10 ml-20 w-full gap-5">
+    <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
       <PageHeader
         title="Purchase Orders Review"
         subTitle="Review all created POs and edit them through the following table."

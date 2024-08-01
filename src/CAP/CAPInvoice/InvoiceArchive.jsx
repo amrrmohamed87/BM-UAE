@@ -50,7 +50,7 @@ export function InvoiceArchive() {
   } = useCAPInvoice("invoicesArchive");
 
   return (
-    <section className="bg-[#F5F5F5] flex flex-col p-10 ml-20 w-full gap-5">
+    <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
       <PageHeader
         title="CAP Invoices Archive"
         subTitle="Review all archived cap invoices and restore, delete, or extract data them through the following table."

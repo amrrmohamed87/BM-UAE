@@ -98,7 +98,7 @@ export function PFIRequest() {
   //console.log(items);
 
   return (
-    <section className=" flex flex-col p-10 ml-20 w-full gap-5">
+    <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
       <div className="flex flex-col gap-3 md:flex-row justify-center md:justify-start items-center md:gap-12">
         <div>
           <h1 className="text-3xl text-neutral-900">Proforma Request</h1>

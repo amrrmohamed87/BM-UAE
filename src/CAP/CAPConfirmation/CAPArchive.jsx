@@ -50,7 +50,7 @@ export function CAPArchive() {
   } = useCAPConfirmation("archivedOrders");
 
   return (
-    <section className="bg-[#F5F5F5] flex flex-col p-10 ml-20 w-full gap-5">
+    <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
       <PageHeader
         title="Confirmed CAP Orders Archive"
         subTitle="Review all archived orders and restore, delete, or extract data them through the following table."
