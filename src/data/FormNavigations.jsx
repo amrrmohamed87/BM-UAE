@@ -148,16 +148,6 @@ export function FormNavigations({
             isClosed();
             closeOriginalSideBar();
           }}
-          name="CAP - Invoice"
-          link="/CAP-invoice"
-        >
-          <HandCoins className="stroke-[0.75] stroke-inherit min-w-8 w-8" />
-        </NavigationLinks>
-        <NavigationLinks
-          closeSidebar={() => {
-            isClosed();
-            closeOriginalSideBar();
-          }}
           name="Invoice - review"
           link="/CAP-invoice-review"
         >

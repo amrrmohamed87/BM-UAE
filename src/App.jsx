@@ -17,7 +17,6 @@ import AddItems from "./pages/AddItems";
 import PFIRequest from "./CAP/PFI/PFIRequest";
 import PFIReview from "./CAP/PFI/PFIReview";
 
-import CAPInvoice from "./CAP/CAPInvoice/CAPInvoice";
 import POArchive from "./CAP/PO/POArchive";
 import CAPReview from "./CAP/CAPConfirmation/CAPReview";
 import CAPArchive from "./CAP/CAPConfirmation/CAPArchive";
@@ -85,10 +84,7 @@ function App() {
           path: "/CAP-confirmation-archive",
           element: <CAPArchive />,
         },
-        {
-          path: "/CAP-invoice",
-          element: <CAPInvoice />,
-        },
+
         {
           path: "/CAP-invoice-review",
           element: <InvoiceReview />,
