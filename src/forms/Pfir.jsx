@@ -471,102 +471,104 @@ export function Pfir({ itemsOptions, customerOptions }) {
       </div>
 
       {addedItems.length > 0 && (
-        <table className="min-w-full divide-y divide-neutral-900 mt-2">
-          <thead className="bg-gray-200">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
-              >
-                Item Name
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
-              >
-                Unit
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
-              >
-                SHPDate
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
-              >
-                QTY
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
-              >
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-neutral-800">
-            {addedItems.map((item, index) => (
-              <tr key={index}>
-                <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                  {item.item.itemName}
-                </td>
-                <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                  {item.unit
-                    .slice()
-                    .reverse()
-                    .map((unit) => unit.label)
-                    .join(", ")}
-                </td>
-                <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                  {item.unit
-                    .slice()
-                    .reverse()
-                    .map((unit) =>
-                      unit.label === "program"
-                        ? unit.value
-                            .map((date) => formateDateTwo(date.value))
-                            .join(", ")
-                        : formateDateTwo(unit.value)
-                    )
-                    .join(", ")}
-                </td>
-                <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                  {item.item.QTY}
-                </td>
-                <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button>
-                        <Trash size={18} className="text-red-500" />
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will archive this
-                          PFI and store its data in the archive table.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteItem(index)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </td>
+        <div className="w-full overflow-x-auto lg:overflow-x-visible">
+          <table className="min-w-full divide-y divide-neutral-900 mt-2">
+            <thead className="bg-gray-200">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                >
+                  Item Name
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                >
+                  Unit
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                >
+                  SHPDate
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                >
+                  QTY
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3  text-left text-xs font-medium text-neutral-800 tracking-wider"
+                >
+                  Action
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-neutral-800">
+              {addedItems.map((item, index) => (
+                <tr key={index}>
+                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
+                    {item.item.itemName}
+                  </td>
+                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
+                    {item.unit
+                      .slice()
+                      .reverse()
+                      .map((unit) => unit.label)
+                      .join(", ")}
+                  </td>
+                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
+                    {item.unit
+                      .slice()
+                      .reverse()
+                      .map((unit) =>
+                        unit.label === "program"
+                          ? unit.value
+                              .map((date) => formateDateTwo(date.value))
+                              .join(", ")
+                          : formateDateTwo(unit.value)
+                      )
+                      .join(", ")}
+                  </td>
+                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
+                    {item.item.QTY}
+                  </td>
+                  <td className="px-4 py-6 whitespace-normal break-words text-sm font-medium text-gray-900">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button>
+                          <Trash size={18} className="text-red-500" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you absolutely sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will archive this
+                            PFI and store its data in the archive table.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteItem(index)}
+                          >
+                            Confirm
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <ToastContainer />
