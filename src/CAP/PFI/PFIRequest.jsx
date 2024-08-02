@@ -158,7 +158,7 @@ export function PFIRequest() {
             )}
           </div>
           <Link
-            to="/add-items"
+            to="/items"
             className="flex justify-end items-center gap-1 text-blue-500 transition-all duration-300 hover:underline"
           >
             Manage Items <ArrowRight size={16} className="mt-1" />
@@ -166,7 +166,7 @@ export function PFIRequest() {
         </div>
       </div>
 
-      <div className="w-full p-6 border bg-neutral-100 rounded">
+      <div className="w-full p-6">
         <Pfir
           itemsOptions={itemDescAndCodeOptions}
           customerOptions={customerCodeOptions}
