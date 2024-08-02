@@ -10,6 +10,36 @@ export const useCAPConfirmation = (pageType) => {
     const [confirmedOrders, setConfirmedOreder] = useState([]);
     const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
+    //!--------------------------------
+    const [uniqueCustomerNameOptions, setUniqueCustomerNameOptions] = useState([]);
+    const [uniqueCustomerNameQueue, setUniqueCustomerNameQueue] = useState("");
+  
+    const [uniqueCAPIDOptions, setUniqueCAPIDOptions] = useState([]);
+    const [uniqueCAPIDQueue, setUniqueCAPIDQueue] = useState("");
+
+    const [uniqueOrderConfirmationNoOptions, setUniqueOrderConfirmationNoOptions] = useState([]);
+    const [uniqueOrderConfirmationNoQueue, setUniqueOrderConfirmationNoQueue] = useState("");
+  
+    const [uniqueDateOptions, setUniqueDateOptions] = useState([]);
+    const [uniqueDateQueue, setUniqueDateQueue] = useState("");
+    //!--------------------------------
+    const [uniqueArchivedCustomerNameOptions, setUniqueArchivedCustomerNameOptions] = useState([]);
+    const [uniqueArchivedCustomerNameQueue, setUniqueArchivedCustomerNameQueue] = useState("");
+  
+    const [uniqueArchivedCAPIDOptions, setUniqueArchivedCAPIDOptions] = useState([]);
+    const [uniqueArchivedCAPIDQueue, setUniqueArchivedCAPIDQueue] = useState("");
+
+    const [uniqueArchivedOrderConfirmationNoOptions, setUniqueArchivedOrderConfirmationNoOptions] = useState([]);
+    const [uniqueArchivedOrderConfirmationNoQueue, setUniqueArchivedOrderConfirmationNoQueue] = useState("");
+  
+    const [uniqueArchivedDateOptions, setUniqueArchivedDateOptions] = useState([]);
+    const [uniqueArchivedDateQueue, setUniqueArchivedDateQueue] = useState("");
+    //!--------------------------------
+
+    //?--------------------------------
+    const [rowsPerPage, setRowsPerPage] = useState(4);
+    const [currentPage, setCurrentPage] = useState(1);
+
     const [selectedRows, setSelectedRows] = useState([]);
 
     const [archivedOrders, setArchivedOrders] = useState([]);
@@ -19,6 +49,12 @@ export const useCAPConfirmation = (pageType) => {
     const [isArchivingOrder, setIsArchivingOrder] = useState(false);
     const [isRestoringOrder, setIsRestoringOrder] = useState(false);
 
+    const [capInvoiceData, setCAPInvoiceData] = useState({
+        capInvoiceNo: "",
+      });
+      const [swiftData, setSwiftData] = useState({
+        swiftNo: "",
+      });
     const [isSwift, setIsSwift] = useState(false);
     const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
@@ -54,7 +90,39 @@ export const useCAPConfirmation = (pageType) => {
 
                     setConfirmedOreder(resData.data);
 
+                    
                     // TODO -> unique Options for filtering purposes
+                    const uniqueCustomerNames = [
+                        ...new Set(resData.data.flatMap((order) => order.PO.PFI.map((pfi) => pfi.Customer.customerName)))
+                    ].map((customer) => ({
+                        label:customer,
+                        value: customer
+                    }));
+                    setUniqueCustomerNameOptions(uniqueCustomerNames);
+
+                    const uniqueCAPID = [
+                        ...new Set(resData.data.flatMap((order) => order.PO.PFI.map((pfi) => pfi.Customer.customerCapIdNo.toString())))
+                    ].map((customer) => ({
+                        label: customer,
+                        value: customer,
+                    }));
+                    setUniqueCAPIDOptions(uniqueCAPID);
+
+                    const uniqueOrderConfirmationNo = [
+                        ...new Set(resData.data.map((order) => order.orderConfirmationNo.toString()))
+                    ].map((orderNumber) => ({
+                        label: orderNumber,
+                        value: orderNumber
+                    }));
+                    setUniqueOrderConfirmationNoOptions(uniqueOrderConfirmationNo);
+
+                    const uniqueOrderDate = [
+                        ...new Set(resData.data.map((order) => date(order.createdAt) ))
+                    ].map((orderData) => ({
+                        label: orderData,
+                        value: orderData
+                    }));
+                    setUniqueDateOptions(uniqueOrderDate);
 
                     setIsLoadingOrders(false);
                 } catch (error) {
@@ -66,8 +134,6 @@ export const useCAPConfirmation = (pageType) => {
             fetchConfirmedOrders();
         }
     }, [reloadTable])
-
-    console.log(confirmedOrders)
 
     useEffect(() => {
         if (pageType === 'archivedOrders') {
@@ -84,8 +150,38 @@ export const useCAPConfirmation = (pageType) => {
                     }
 
                     setArchivedOrders(resData.data);
-
                     // TODO --> unique options for filtering purposes
+                    const uniqueCustomerNames = [
+                        ...new Set(resData.data.flatMap((order) => order.PO.PFI.map((pfi) => pfi.Customer.customerName)))
+                    ].map((customer) => ({
+                        label:customer,
+                        value: customer
+                    }));
+                    setUniqueArchivedCustomerNameOptions(uniqueCustomerNames);
+
+                    const uniqueCAPID = [
+                        ...new Set(resData.data.flatMap((order) => order.PO.PFI.map((pfi) => pfi.Customer.customerCapIdNo.toString())))
+                    ].map((customer) => ({
+                        label: customer,
+                        value: customer,
+                    }));
+                    setUniqueArchivedCAPIDOptions(uniqueCAPID);
+
+                    const uniqueOrderConfirmationNo = [
+                        ...new Set(resData.data.map((order) => order.orderConfirmationNo.toString()))
+                    ].map((orderNumber) => ({
+                        label: orderNumber,
+                        value: orderNumber
+                    }));
+                    setUniqueArchivedOrderConfirmationNoOptions(uniqueOrderConfirmationNo);
+
+                    const uniqueOrderDate = [
+                        ...new Set(resData.data.map((order) => date(order.createdAt) ))
+                    ].map((orderData) => ({
+                        label: orderData,
+                        value: orderData
+                    }));
+                    setUniqueArchivedDateOptions(uniqueOrderDate);
 
                     setIsLoadingArchivedOrders(false);
                 } catch (error) {
@@ -97,6 +193,8 @@ export const useCAPConfirmation = (pageType) => {
             fetchArchivedOrders();
         }
     }, [reloadTable])
+
+    console.log(archivedOrders)
 
     return {
         confirmedOrders,
@@ -111,13 +209,52 @@ export const useCAPConfirmation = (pageType) => {
         setIsDeletingOrder,
         isArchivingOrder,
         setIsArchivingOrder,
+        capInvoiceData,
+        setCAPInvoiceData,
+        swiftData,
+        setSwiftData,
         isCreatingInvoice,
         setIsCreatingInvoice,
         isSwift,
         setIsSwift,
+        //?--------
+        uniqueCustomerNameOptions,
+        uniqueCustomerNameQueue,
+        setUniqueCustomerNameQueue,
+        uniqueCAPIDOptions,
+        uniqueCAPIDQueue,
+        setUniqueCAPIDQueue,
+        uniqueOrderConfirmationNoOptions,
+        uniqueOrderConfirmationNoQueue,
+        setUniqueOrderConfirmationNoQueue,
+        uniqueDateOptions,
+        uniqueDateQueue,
+        setUniqueDateQueue,
+        date,
+        //?--------------
+        //!--------------
+        rowsPerPage,
+        setRowsPerPage,
+        currentPage,
+        setCurrentPage,
+        //!--------------
         archivedOrders,
         isLoadingArchivedOrders,
         isRestoringOrder,
         setIsRestoringOrder,
+        //?--------------
+        uniqueArchivedCustomerNameOptions,
+        uniqueArchivedCustomerNameQueue,
+        setUniqueArchivedCustomerNameQueue,
+        uniqueArchivedCAPIDOptions,
+        uniqueArchivedCAPIDQueue,
+        setUniqueArchivedCAPIDQueue,
+        uniqueArchivedOrderConfirmationNoOptions,
+        uniqueArchivedOrderConfirmationNoQueue,
+        setUniqueArchivedOrderConfirmationNoQueue,
+        uniqueArchivedDateOptions,
+        uniqueArchivedDateQueue,
+        setUniqueArchivedDateQueue,
+        //?---------------
     }
 }
