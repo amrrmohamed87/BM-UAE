@@ -11,7 +11,7 @@ export const TritonPrepareForm = () => {
     <div className="flex flex-col items-center w-full gap-10">
       <div className="w-full flex flex-col md:flex-row justify-center items-center gap-5 md:gap-10">
         <form method="post" className="w-full md:w-2/3">
-          <div className="flex flex-col gap-6 bg-neutral-50 rounded shadow border p-4 w-full">
+          <div className="flex flex-col gap-6 bg-white rounded shadow border p-4 w-full">
             <h1 className="text-center text-xl font-semiBold">
               Traceability Entry
             </h1>
