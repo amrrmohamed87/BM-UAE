@@ -29,6 +29,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import Filter from "@/components/Filter";
+import Select from "react-select";
+import CAPOrdersTable from "@/tables/CAPOrdersTable";
+import { handleCheckboxChange } from "@/utils/utils";
+import Pagination from "@/components/Pagination";
+import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
 
 export function CAPReview() {
   //? Custom Hook for CAP Confirmation Orders
@@ -46,11 +52,144 @@ export function CAPReview() {
     setIsArchivingOrder,
     isDeletingOrder,
     setIsDeletingOrder,
+    capInvoiceData,
+    setCAPInvoiceData,
+    swiftData,
+    setSwiftData,
     isCreatingInvoice,
     setIsCreatingInvoice,
     isSwift,
     setIsSwift,
+    uniqueCustomerNameOptions,
+    uniqueCustomerNameQueue,
+    setUniqueCustomerNameQueue,
+    uniqueCAPIDOptions,
+    uniqueCAPIDQueue,
+    setUniqueCAPIDQueue,
+    uniqueOrderConfirmationNoOptions,
+    uniqueOrderConfirmationNoQueue,
+    setUniqueOrderConfirmationNoQueue,
+    uniqueDateOptions,
+    uniqueDateQueue,
+    setUniqueDateQueue,
+    date,
+    rowsPerPage,
+    setRowsPerPage,
+    currentPage,
+    setCurrentPage,
   } = useCAPConfirmation("reviewOrders");
+
+  //Sending Data to the API
+  const handleCreateInvoice = async () => {
+    setIsCreatingInvoice(true);
+
+    const invoiceData = {
+      CAPOrderId: selectedRows.length > 0 && selectedRows[0].id,
+      capInvoiceNo: capInvoiceData.capInvoiceNo,
+      swiftNo: swiftData.swiftNo ? swiftData.swiftNo : "",
+    };
+
+    console.log(invoiceData);
+
+    try {
+      const response = await fetch(
+        "https://benchmark-innovation-production.up.railway.app/api/cap-invoice",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(invoiceData),
+        }
+      );
+      const resData = await response.json();
+
+      console.log(resData.message);
+
+      if (!response.ok) {
+        toast.error(resData.message);
+        setIsCreatingInvoice(false);
+        return;
+      }
+
+      toast.success("Invoice Created Succefully");
+
+      setReloadTable(!reloadTable);
+      setCAPInvoiceData({
+        capInvoiceNo: "",
+      });
+      setSwiftData({
+        swiftNo: "",
+      });
+      setIsSwift(false);
+      setIsCreatingInvoice(false);
+    } catch (error) {
+      toast.error(error.message);
+      setIsCreatingInvoice(false);
+      return;
+    }
+  };
+  const handleArchiveOrDeletePFIs = async (endPoint, setIsLoadingState) => {
+    const orderId = {
+      ids: selectedRows.map((row) => row.id),
+    };
+
+    await handleArchiveRestoreOrDeleteData(
+      orderId,
+      endPoint,
+      setIsLoadingState,
+      setReloadTable,
+      reloadTable,
+      setSelectedRows
+    );
+  };
+
+  // Filtering data methods
+  const filteredOrders = confirmedOrders.filter(
+    (order) =>
+      (!uniqueCustomerNameQueue ||
+        order.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerName.toLowerCase() ===
+            uniqueCustomerNameQueue.toLowerCase()
+        )) &&
+      (!uniqueCAPIDQueue ||
+        order.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerCapIdNo.toString().toLowerCase() ===
+            uniqueCAPIDQueue.toLowerCase()
+        )) &&
+      (!uniqueOrderConfirmationNoQueue ||
+        order.orderConfirmationNo.toString().toLowerCase() ===
+          uniqueOrderConfirmationNoQueue.toLowerCase()) &&
+      (!uniqueDateQueue ||
+        date(order.createdAt).toLowerCase() === uniqueDateQueue.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
+
+  const currentData = filteredOrders.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  // Handle onChange function
+  function handleCheckboxChange(event, order) {
+    const isChecked = event.target.checked;
+
+    setSelectedRows((prevRows) => {
+      if (isChecked) {
+        return [...prevRows, order];
+      } else {
+        return prevRows.filter((row) => row !== order);
+      }
+    });
+  }
+
+  function handleRowsPerPage(event) {
+    setRowsPerPage(event.target.value);
+    setCurrentPage(1);
+  }
 
   return (
     <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
@@ -152,6 +291,13 @@ export function CAPReview() {
                       placeholder="CAP Invoice Number"
                       type="number"
                       name="Cap Invoice Number"
+                      value={capInvoiceData.capInvoiceNo}
+                      onChange={(event) => {
+                        setCAPInvoiceData((prev) => ({
+                          ...prev,
+                          capInvoiceNo: event.target.value,
+                        }));
+                      }}
                       className="w-full mb-5 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
                     />
 
@@ -178,6 +324,13 @@ export function CAPReview() {
                             placeholder="Swift Number"
                             type="number"
                             name="Swift Number"
+                            value={swiftData.swiftNo}
+                            onChange={(event) => {
+                              setSwiftData((prev) => ({
+                                ...prev,
+                                swiftNo: event.target.value,
+                              }));
+                            }}
                             className="w-full p-1 mb-4 rounded h-[30px] md:h-[35px] lg:h-[40px] border border-gray-400 focus:outline-none focus:border-blue-500 pl-2 md:pl-3 pr-3"
                           />
                         </motion.div>
@@ -186,11 +339,23 @@ export function CAPReview() {
                   </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setSelectedRows([])}>
+                  <AlertDialogCancel
+                    onClick={() => {
+                      setSelectedRows([]);
+                      setCAPInvoiceData({
+                        capInvoiceNo: "",
+                      });
+                      setSwiftData({
+                        swiftNo: "",
+                      });
+                    }}
+                  >
                     Cancel
                   </AlertDialogCancel>
                   <form method="post">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction onClick={handleCreateInvoice}>
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -234,7 +399,16 @@ export function CAPReview() {
                       Cancel
                     </AlertDialogCancel>
                     <form method="delete">
-                      <AlertDialogAction>Confirm</AlertDialogAction>
+                      <AlertDialogAction
+                        onClick={() => {
+                          handleArchiveOrDeletePFIs(
+                            "https://benchmark-innovation-production.up.railway.app/api/cap-confirmation/soft",
+                            setIsArchivingOrder
+                          );
+                        }}
+                      >
+                        Confirm
+                      </AlertDialogAction>
                     </form>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -277,7 +451,16 @@ export function CAPReview() {
                       Cancel
                     </AlertDialogCancel>
                     <form method="delete">
-                      <AlertDialogAction>Confirm</AlertDialogAction>
+                      <AlertDialogAction
+                        onClick={() => {
+                          handleArchiveOrDeletePFIs(
+                            "https://benchmark-innovation-production.up.railway.app/api/cap-confirmation",
+                            setIsDeletingOrder
+                          );
+                        }}
+                      >
+                        Confirm
+                      </AlertDialogAction>
                     </form>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -285,6 +468,71 @@ export function CAPReview() {
             </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {filterOrders && (
+            <Filter
+              uniqueFirstOptions={uniqueCustomerNameOptions}
+              uniqueFirstQueue={uniqueCustomerNameQueue}
+              setUniqueFirstQueue={setUniqueCustomerNameQueue}
+              firstPlaceHolder="Customer Name"
+              uniqueSecondOptions={uniqueCAPIDOptions}
+              uniqueSecondQueue={uniqueCAPIDQueue}
+              setUniqueSecondQueue={setUniqueCAPIDQueue}
+              secondPlaceHolder="CAP ID"
+              uniqueThirdOptions={uniqueOrderConfirmationNoOptions}
+              uniqueThirdQueue={uniqueOrderConfirmationNoQueue}
+              setUniqueThirdQueue={setUniqueOrderConfirmationNoQueue}
+              ThirdPlaceHolder="Order Confirmation #"
+            >
+              <Select
+                options={uniqueDateOptions}
+                value={uniqueDateOptions.find(
+                  (option) => option.value === uniqueDateQueue
+                )}
+                onChange={(option) =>
+                  setUniqueDateQueue(option && option.value)
+                }
+                isClearable
+                className="w-full"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+                placeholder="Issue Date"
+              />
+            </Filter>
+          )}
+        </AnimatePresence>
+
+        <CAPOrdersTable
+          isLoadingState={isLoadingOrders}
+          fetchedData={confirmedOrders}
+          currentData={currentData}
+          selectedRows={selectedRows}
+          handleCheckboxChange={handleCheckboxChange}
+          formatDate={date}
+        />
+      </div>
+
+      <hr className="border-neutral-400" />
+
+      <div className="flex flex-col justify-center gap-3 md:flex-row md:justify-between items-center mt-4 md:mt-2">
+        <div className="flex items-center gap-2">
+          <input
+            value={selectedRows.length}
+            onChange={(event) => event.target.value}
+            className="w-10 pl-3 border rounded-md shadow"
+          />
+          <p className="">row selected</p>
+        </div>
+        <Pagination
+          rowsPerPage={rowsPerPage}
+          handleRowsPerPage={handleRowsPerPage}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
       </div>
 
       <h1 className="text-center text-sm text-neutral-400">
