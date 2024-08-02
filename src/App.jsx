@@ -122,7 +122,7 @@ function App() {
           element: <PurchaseOrder />,
         },
         {
-          path: "/add-items",
+          path: "/items",
           element: <AddItems />,
         },
         {
