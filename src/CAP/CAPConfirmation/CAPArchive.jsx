@@ -47,7 +47,71 @@ export function CAPArchive() {
     setIsRestoringOrder,
     isDeletingOrder,
     setIsDeletingOrder,
+    uniqueArchivedCustomerNameOptions,
+    uniqueArchivedCustomerNameQueue,
+    setUniqueArchivedCustomerNameQueue,
+    uniqueArchivedCAPIDOptions,
+    uniqueArchivedCAPIDQueue,
+    setUniqueArchivedCAPIDQueue,
+    uniqueArchivedOrderConfirmationNoOptions,
+    uniqueArchivedOrderConfirmationNoQueue,
+    setUniqueArchivedOrderConfirmationNoQueue,
+    uniqueArchivedDateOptions,
+    uniqueArchivedDateQueue,
+    setUniqueArchivedDateQueue,
+    date,
+    rowsPerPage,
+    setRowsPerPage,
+    currentPage,
+    setCurrentPage,
   } = useCAPConfirmation("archivedOrders");
+
+  const filteredOrders = archivedOrders.filter(
+    (order) =>
+      (!uniqueArchivedCustomerNameQueue ||
+        order.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerName.toLowerCase() ===
+            uniqueArchivedCustomerNameQueue.toLowerCase()
+        )) &&
+      (!uniqueArchivedCAPIDQueue ||
+        order.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerCapIdNo.toString().toLowerCase() ===
+            uniqueArchivedCAPIDQueue.toLowerCase()
+        )) &&
+      (!uniqueArchivedOrderConfirmationNoQueue ||
+        order.orderConfirmationNo.toString().toLowerCase() ===
+          uniqueArchivedOrderConfirmationNoQueue.toLowerCase()) &&
+      (!uniqueArchivedDateQueue ||
+        date(order.createdAt).toLowerCase() ===
+          uniqueArchivedDateQueue.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
+
+  const currentData = filteredOrders.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  // Handle onChange function
+  function handleCheckboxChange(event, order) {
+    const isChecked = event.target.checked;
+
+    setSelectedRows((prevRows) => {
+      if (isChecked) {
+        return [...prevRows, order];
+      } else {
+        return prevRows.filter((row) => row !== order);
+      }
+    });
+  }
+
+  function handleRowsPerPage(event) {
+    setRowsPerPage(event.target.value);
+    setCurrentPage(1);
+  }
 
   return (
     <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
@@ -194,6 +258,42 @@ export function CAPArchive() {
             </AlertDialog>
           </div>
         </div>
+
+        <AnimatePresence>
+          {filterOrders && (
+            <Filter
+              uniqueFirstOptions={uniqueArchivedCustomerNameOptions}
+              uniqueFirstQueue={uniqueArchivedCustomerNameQueue}
+              setUniqueFirstQueue={setUniqueArchivedCustomerNameQueue}
+              firstPlaceHolder="Customer Name"
+              uniqueSecondOptions={uniqueArchivedCAPIDOptions}
+              uniqueSecondQueue={uniqueArchivedCAPIDQueue}
+              setUniqueSecondQueue={setUniqueArchivedCAPIDQueue}
+              secondPlaceHolder="CAP ID"
+              uniqueThirdOptions={uniqueArchivedOrderConfirmationNoOptions}
+              uniqueThirdQueue={uniqueArchivedOrderConfirmationNoQueue}
+              setUniqueThirdQueue={setUniqueArchivedOrderConfirmationNoQueue}
+              ThirdPlaceHolder="Order Confirmation #"
+            >
+              <Select
+                options={uniqueArchivedDateOptions}
+                value={uniqueArchivedDateOptions.find(
+                  (option) => option.value === uniqueArchivedDateQueue
+                )}
+                onChange={(option) =>
+                  setUniqueDateQueue(option && option.value)
+                }
+                isClearable
+                className="w-full"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+                placeholder="Issue Date"
+              />
+            </Filter>
+          )}
+        </AnimatePresence>
       </div>
       <h1 className="text-center text-sm text-neutral-400">
         @2024 ApexBuild, Benchmark - All rights reserved
