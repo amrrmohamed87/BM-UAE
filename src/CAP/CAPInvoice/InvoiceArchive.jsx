@@ -30,6 +30,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
+import Filter from "@/components/Filter";
+import Select from "react-select";
+import CAPInvoiceTable from "@/tables/CAPInvoiceTable";
+import Pagination from "@/components/Pagination";
 
 export function InvoiceArchive() {
   //? Custom hook for Invoices arhcive
@@ -43,11 +48,87 @@ export function InvoiceArchive() {
     setReloadTable,
     selectedRows,
     setSelectedRows,
+    rowsPerPage,
+    setRowsPerPage,
+    currentPage,
+    setCurrentPage,
     filterInvoices,
     setFilterInvoices,
     isDeletingInvoice,
     setIsDeletingInvoice,
+    uniqueArchivedCustomerNameOptions,
+    uniqueArchivedCustomerNameQueue,
+    setUniqueArchivedCustomerNameQueue,
+    uniqueArchivedCAPIDOptions,
+    uniqueArchivedCAPIDQueue,
+    setUniqueArchivedCAPIDQueue,
+    uniqueArchivedCapInvoiceNoOptions,
+    uniqueArchivedCapInvoiceNoQueue,
+    setUniqueArchivedCapInvoiceNoQueue,
+    uniqueArchivedStatusOptions,
+    uniqueArchivedStatusQueue,
+    setUniqueArchivedStatusQueue,
   } = useCAPInvoice("invoicesArchive");
+
+  //Sending data to api
+  const handleRestoreOrDelete = async (endPoint, setIsLoadingState) => {
+    const invoiceIds = {
+      ids: selectedRows.map((row) => row.id),
+    };
+
+    await handleArchiveRestoreOrDeleteData(
+      invoiceIds,
+      endPoint,
+      setIsLoadingState,
+      setReloadTable,
+      reloadTable,
+      setSelectedRows
+    );
+  };
+
+  //Filter functions
+  const filteredInvoices = archivedInvoices.filter(
+    (invoice) =>
+      (!uniqueArchivedCustomerNameQueue ||
+        invoice.CAPOrder.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerName.toLowerCase() ===
+            uniqueArchivedCustomerNameQueue.toLowerCase()
+        )) &&
+      (!uniqueArchivedCAPIDQueue ||
+        invoice.CAPOrder.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerCapIdNo.toString().toLowerCase() ===
+            uniqueArchivedCAPIDQueue.toLowerCase()
+        )) &&
+      (!uniqueArchivedCapInvoiceNoQueue ||
+        invoice.capInvoiceNo.toLowerCase() ===
+          uniqueArchivedCapInvoiceNoQueue.toLowerCase()) &&
+      (!uniqueArchivedStatusQueue ||
+        invoice.status.toLowerCase() ===
+          uniqueArchivedStatusQueue.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredInvoices.length / rowsPerPage);
+
+  const currentData = filteredInvoices.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  //handle onChange functions
+
+  function handleCheckboxChange(event, invoice) {
+    const isChecked = event.target.checked;
+
+    setSelectedRows((prevRows) => {
+      if (isChecked) {
+        return [...prevRows, invoice];
+      } else {
+        return prevRows.filter((row) => row !== invoice);
+      }
+    });
+  }
 
   return (
     <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
@@ -140,7 +221,7 @@ export function InvoiceArchive() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will restore those
+                    This action cannot be undone. This will archive those
                     Invoices.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -149,7 +230,16 @@ export function InvoiceArchive() {
                     Cancel
                   </AlertDialogCancel>
                   <form method="delete">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction
+                      onClick={() => {
+                        handleRestoreOrDelete(
+                          "https://benchmark-innovation-production.up.railway.app/api/cap-invoice/soft",
+                          setIsRestoringInvoice
+                        );
+                      }}
+                    >
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -190,12 +280,85 @@ export function InvoiceArchive() {
                     Cancel
                   </AlertDialogCancel>
                   <form method="delete">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction
+                      onClick={() =>
+                        handleRestoreOrDelete(
+                          "https://benchmark-innovation-production.up.railway.app/api/cap-invoice",
+                          setIsDeletingInvoice
+                        )
+                      }
+                    >
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </div>
+        </div>
+
+        <AnimatePresence>
+          {filterInvoices && (
+            <Filter
+              uniqueFirstOptions={uniqueArchivedCustomerNameOptions}
+              uniqueFirstQueue={uniqueArchivedCustomerNameQueue}
+              setUniqueFirstQueue={setUniqueArchivedCustomerNameQueue}
+              firstPlaceHolder="Customer Name"
+              uniqueSecondOptions={uniqueArchivedCAPIDOptions}
+              uniqueSecondQueue={uniqueArchivedCAPIDQueue}
+              setUniqueSecondQueue={setUniqueArchivedCAPIDQueue}
+              secondPlaceHolder="CAP ID"
+              uniqueThirdOptions={uniqueArchivedCapInvoiceNoOptions}
+              uniqueThirdQueue={uniqueArchivedCapInvoiceNoQueue}
+              setUniqueThirdQueue={setUniqueArchivedCapInvoiceNoQueue}
+              ThirdPlaceHolder="Cap Invoice #"
+            >
+              <Select
+                options={uniqueArchivedStatusOptions}
+                value={uniqueArchivedStatusOptions.find(
+                  (option) => option.value === uniqueArchivedStatusQueue
+                )}
+                onChange={(option) =>
+                  setUniqueArchivedStatusQueue(option && option.value)
+                }
+                isClearable
+                className="w-full"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+                placeholder="Status"
+              />
+            </Filter>
+          )}
+        </AnimatePresence>
+
+        <CAPInvoiceTable
+          isLoadingState={isLoadingArchivedInvoices}
+          fetchedData={archivedInvoices}
+          currentData={currentData}
+          selectedRows={selectedRows}
+          handleCheckboxChange={handleCheckboxChange}
+        />
+
+        <hr className="border-neutral-400" />
+
+        <div className="flex flex-col justify-center gap-3 md:flex-row md:justify-between items-center mt-4 md:mt-2">
+          <div className="flex items-center gap-2">
+            <input
+              value={selectedRows.length}
+              onChange={(event) => event.target.value}
+              className="w-10 pl-3 border rounded-md shadow"
+            />
+            <p className="">row selected</p>
+          </div>
+          <Pagination
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+          />
         </div>
       </div>
 
