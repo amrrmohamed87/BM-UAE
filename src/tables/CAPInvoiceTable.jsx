@@ -8,7 +8,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CircleAlert, CircleCheckBig, Loader, PenBox } from "lucide-react";
+import {
+  CircleAlert,
+  CircleCheckBig,
+  Info,
+  Loader,
+  PenBox,
+} from "lucide-react";
 
 export const CAPInvoiceTable = ({
   isLoadingState,
@@ -173,7 +179,7 @@ export const CAPInvoiceTable = ({
                         <Dialog>
                           <DialogTrigger asChild>
                             <button>
-                              <PenBox size={18} className="text-blue-500" />
+                              <Info size={20} className="text-blue-500" />
                             </button>
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[900px]">
