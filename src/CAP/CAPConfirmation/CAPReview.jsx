@@ -186,11 +186,6 @@ export function CAPReview() {
     });
   }
 
-  function handleRowsPerPage(event) {
-    setRowsPerPage(event.target.value);
-    setCurrentPage(1);
-  }
-
   return (
     <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
       <PageHeader
@@ -528,7 +523,7 @@ export function CAPReview() {
         </div>
         <Pagination
           rowsPerPage={rowsPerPage}
-          handleRowsPerPage={handleRowsPerPage}
+          setRowsPerPage={setRowsPerPage}
           currentPage={currentPage}
           totalPages={totalPages}
           setCurrentPage={setCurrentPage}

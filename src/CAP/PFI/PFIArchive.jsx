@@ -147,11 +147,6 @@ export function PFIArchive() {
    * 2- handleCheckboxChange
    */
 
-  function handleRowsPerPage(event) {
-    setRowsPerPage(event.target.value);
-    setCurrentPage(1);
-  }
-
   function handleCheckboxChange(event, pfi) {
     const isChecked = event.target.checked;
 
@@ -511,7 +506,7 @@ export function PFIArchive() {
           </div>
           <Pagination
             rowsPerPage={rowsPerPage}
-            handleRowsPerPage={handleRowsPerPage}
+            setRowsPerPage={setRowsPerPage}
             currentPage={currentPage}
             totalPages={totalPages}
             setCurrentPage={setCurrentPage}

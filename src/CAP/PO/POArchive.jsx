@@ -124,11 +124,6 @@ export function POArchive() {
    * handle onChange function
    */
 
-  function handleRowsPerPage(event) {
-    setRowsPerPage(event.target.value);
-    setCurrentPage(1);
-  }
-
   function handleCheckboxChange(event, po) {
     const isChecked = event.target.checked;
 
@@ -343,7 +338,7 @@ export function POArchive() {
           </div>
           <Pagination
             rowsPerPage={rowsPerPage}
-            handleRowsPerPage={handleRowsPerPage}
+            setRowsPerPage={setRowsPerPage}
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             totalPages={totalPages}

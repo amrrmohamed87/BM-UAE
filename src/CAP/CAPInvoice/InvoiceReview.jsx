@@ -29,6 +29,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import Filter from "@/components/Filter";
+import Select from "react-select";
+import CAPInvoiceTable from "@/tables/CAPInvoiceTable";
+import Pagination from "@/components/Pagination";
 
 export function InvoiceReview() {
   //? Custome hook for Invoices Review
@@ -40,13 +44,73 @@ export function InvoiceReview() {
     setReloadTable,
     selectedRows,
     setSelectedRows,
+    rowsPerPage,
+    setRowsPerPage,
+    currentPage,
+    setCurrentPage,
     filterInvoices,
     setFilterInvoices,
     isDeletingInvoice,
     setIsDeletingInvoice,
     isArchivingInvoice,
     setIsArchivingInvoice,
+    uniqueCustomerNameOptions,
+    uniqueCustomerNameQueue,
+    setUniqueCustomerNameQueue,
+    uniqueCAPIDOptions,
+    uniqueCAPIDQueue,
+    setUniqueCAPIDQueue,
+    uniqueCapInvoiceNoOptions,
+    uniqueCapInvoiceNoQueue,
+    setUniqueCapInvoiceNoQueue,
+    uniqueStatusOptions,
+    uniqueStatusQueue,
+    setUniqueStatusQueue,
   } = useCAPInvoice("invoicesReview");
+
+  //Filter functions
+  const filteredInvoices = capInvoices.filter(
+    (invoice) =>
+      (!uniqueCustomerNameQueue ||
+        invoice.CAPOrder.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerName.toLowerCase() ===
+            uniqueCustomerNameQueue.toLowerCase()
+        )) &&
+      (!uniqueCAPIDQueue ||
+        invoice.CAPOrder.PO.PFI.some(
+          (pfi) =>
+            pfi.Customer.customerCapIdNo.toString().toLowerCase() ===
+            uniqueCAPIDQueue.toLowerCase()
+        )) &&
+      (!uniqueCapInvoiceNoQueue ||
+        invoice.capInvoiceNo.toLowerCase() ===
+          uniqueCapInvoiceNoQueue.toLowerCase()) &&
+      (!uniqueStatusQueue ||
+        invoice.status.toLowerCase() === uniqueStatusQueue.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredInvoices.length / rowsPerPage);
+
+  const currentData = filteredInvoices.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  //handle onChange functions
+
+  function handleCheckboxChange(event, invoice) {
+    const isChecked = event.target.checked;
+
+    setSelectedRows((prevRows) => {
+      if (isChecked) {
+        return [...prevRows, invoice];
+      } else {
+        return prevRows.filter((row) => row !== invoice);
+      }
+    });
+  }
+
   return (
     <section className="bg-[#f8fcff] flex flex-col p-10 ml-20 w-full gap-5">
       <PageHeader
@@ -194,6 +258,70 @@ export function InvoiceReview() {
               </AlertDialogContent>
             </AlertDialog>
           </div>
+        </div>
+
+        <AnimatePresence>
+          {filterInvoices && (
+            <Filter
+              uniqueFirstOptions={uniqueCustomerNameOptions}
+              uniqueFirstQueue={uniqueCustomerNameQueue}
+              setUniqueFirstQueue={setUniqueCustomerNameQueue}
+              firstPlaceHolder="Customer Name"
+              uniqueSecondOptions={uniqueCAPIDOptions}
+              uniqueSecondQueue={uniqueCAPIDQueue}
+              setUniqueSecondQueue={setUniqueCAPIDQueue}
+              secondPlaceHolder="CAP ID"
+              uniqueThirdOptions={uniqueCapInvoiceNoOptions}
+              uniqueThirdQueue={uniqueCapInvoiceNoQueue}
+              setUniqueThirdQueue={setUniqueCapInvoiceNoQueue}
+              ThirdPlaceHolder="Cap Invoice #"
+            >
+              <Select
+                options={uniqueStatusOptions}
+                value={uniqueStatusOptions.find(
+                  (option) => option.value === uniqueStatusQueue
+                )}
+                onChange={(option) =>
+                  setUniqueStatusQueue(option && option.value)
+                }
+                isClearable
+                className="w-full"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                }}
+                placeholder="Status"
+              />
+            </Filter>
+          )}
+        </AnimatePresence>
+
+        <CAPInvoiceTable
+          isLoadingState={isLoadingCAPInvoices}
+          fetchedData={capInvoices}
+          currentData={currentData}
+          selectedRows={selectedRows}
+          handleCheckboxChange={handleCheckboxChange}
+        />
+
+        <hr className="border-neutral-400" />
+
+        <div className="flex flex-col justify-center gap-3 md:flex-row md:justify-between items-center mt-4 md:mt-2">
+          <div className="flex items-center gap-2">
+            <input
+              value={selectedRows.length}
+              onChange={(event) => event.target.value}
+              className="w-10 pl-3 border rounded-md shadow"
+            />
+            <p className="">row selected</p>
+          </div>
+          <Pagination
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+          />
         </div>
       </div>
 

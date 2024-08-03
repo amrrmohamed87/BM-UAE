@@ -157,11 +157,6 @@ export function POReview() {
    * 1- handleRowsPerPage
    */
 
-  function handleRowsPerPage(event) {
-    setRowsPerPage(event.target.value);
-    setCurrentPage(1);
-  }
-
   function handleCheckboxChange(event, po) {
     const isChecked = event.target.checked;
 
@@ -517,7 +512,7 @@ export function POReview() {
           </div>
           <Pagination
             rowsPerPage={rowsPerPage}
-            handleRowsPerPage={handleRowsPerPage}
+            setRowsPerPage={setRowsPerPage}
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             totalPages={totalPages}
