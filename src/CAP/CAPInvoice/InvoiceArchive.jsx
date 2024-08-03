@@ -68,6 +68,10 @@ export function InvoiceArchive() {
     uniqueArchivedStatusOptions,
     uniqueArchivedStatusQueue,
     setUniqueArchivedStatusQueue,
+    singleInvoiceData,
+    setSingleInvoiceData,
+    isLoadingSingleInvoiceData,
+    setInvoiceId,
   } = useCAPInvoice("invoicesArchive");
 
   //Sending data to api
@@ -339,6 +343,10 @@ export function InvoiceArchive() {
           currentData={currentData}
           selectedRows={selectedRows}
           handleCheckboxChange={handleCheckboxChange}
+          singleInvoiceData={singleInvoiceData}
+          setInvoiceId={setInvoiceId}
+          isLoadingSingleInvoiceData={isLoadingSingleInvoiceData}
+          setSingleInvoiceData={setSingleInvoiceData}
         />
 
         <hr className="border-neutral-400" />

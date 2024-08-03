@@ -9,6 +9,13 @@ export const useCAPInvoice = (pageType) => {
     const [capInvoices, setCAPInvoices] = useState([]);
     const [isLoadingCAPInvoices, setIsLoadingCAPInvoices] = useState(false);
 
+    const [singleInvoiceData, setSingleInvoiceData] = useState([]);
+    const [isLoadingSingleInvoiceData, setIsLoadingSingleInvoiceData] = useState(false);
+    const [invoiceId, setInvoiceId] = useState({
+        id: "",
+      });
+      const [isUpdatingInvoice, setIsUpdatingInvoice] = useState(false);
+
     //!--------------------------------
     const [uniqueCustomerNameOptions, setUniqueCustomerNameOptions] = useState([]);
     const [uniqueCustomerNameQueue, setUniqueCustomerNameQueue] = useState("");
@@ -116,8 +123,6 @@ export const useCAPInvoice = (pageType) => {
         }
     }, [reloadTable]);
 
-    console.log(capInvoices)
-
     useEffect(() => {
         if (pageType === 'invoicesArchive') {
             async function fetchArchivedInvoices() {
@@ -178,6 +183,36 @@ export const useCAPInvoice = (pageType) => {
         }
     }, [reloadTable]);
 
+    useEffect(() => {
+        if (invoiceId.id) {
+            async function fetchInvoiceData() {
+              setIsLoadingSingleInvoiceData(true);
+              try {
+                const response = await fetch(
+                  `https://benchmark-innovation-production.up.railway.app/api/cap-invoice/${invoiceId.id}`
+                );
+                const resData = await response.json();
+        
+                if (!response.ok) {
+                  toast.error(resData.message);
+                  setIsLoadingSingleInvoiceData(false);
+                  return;
+                }
+        
+                setSingleInvoiceData(resData);
+                setIsLoadingSingleInvoiceData(false);
+              } catch (error) {
+                toast.error(resData.message);
+                setIsLoadingSingleInvoiceData(false);
+                return;
+              }
+            }
+            fetchInvoiceData()
+        }
+      }, [invoiceId.id]);
+
+      console.log(singleInvoiceData)
+
 
     return {
         capInvoices,
@@ -226,7 +261,16 @@ export const useCAPInvoice = (pageType) => {
         setUniqueArchivedCapInvoiceNoQueue,
         uniqueArchivedStatusOptions,
         uniqueArchivedStatusQueue,
-        setUniqueArchivedStatusQueue
+        setUniqueArchivedStatusQueue,
+        //?------------------
+        singleInvoiceData,
+        setSingleInvoiceData,
+        isLoadingSingleInvoiceData,
+        setIsLoadingSingleInvoiceData,
+        invoiceId,
+        setInvoiceId,
+        isUpdatingInvoice,
+        setIsUpdatingInvoice
     }
 
 }

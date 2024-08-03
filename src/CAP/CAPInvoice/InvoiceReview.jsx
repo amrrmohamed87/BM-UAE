@@ -34,6 +34,7 @@ import Select from "react-select";
 import CAPInvoiceTable from "@/tables/CAPInvoiceTable";
 import Pagination from "@/components/Pagination";
 import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
+import { useEffect } from "react";
 
 export function InvoiceReview() {
   //? Custome hook for Invoices Review
@@ -67,6 +68,13 @@ export function InvoiceReview() {
     uniqueStatusOptions,
     uniqueStatusQueue,
     setUniqueStatusQueue,
+    singleInvoiceData,
+    setSingleInvoiceData,
+    isLoadingSingleInvoiceData,
+    invoiceId,
+    setInvoiceId,
+    isUpdatingInvoice,
+    setIsUpdatingInvoice,
   } = useCAPInvoice("invoicesReview");
 
   //Sending data to api
@@ -83,6 +91,49 @@ export function InvoiceReview() {
       reloadTable,
       setSelectedRows
     );
+  };
+
+  const handleUpdateInvoice = async () => {
+    setIsUpdatingInvoice(true);
+
+    const updatedData = {
+      capInvoiceNo: singleInvoiceData.capInvoiceNo,
+      swiftNo: singleInvoiceData.swiftNo,
+    };
+
+    try {
+      const response = await fetch(
+        `https://benchmark-innovation-production.up.railway.app/api/cap-invoice/${invoiceId.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
+        }
+      );
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        toast.error(resData.message);
+        setIsUpdatingInvoice(false);
+        return;
+      }
+
+      toast.success("Invoice Updated Successfully");
+
+      setReloadTable(!reloadTable);
+      setInvoiceId({
+        id: "",
+      });
+      setSingleInvoiceData([]);
+      setIsUpdatingInvoice(false);
+    } catch (error) {
+      toast.error(error.message);
+      setIsUpdatingInvoice(false);
+      return;
+    }
   };
 
   //Filter functions
@@ -337,6 +388,12 @@ export function InvoiceReview() {
           currentData={currentData}
           selectedRows={selectedRows}
           handleCheckboxChange={handleCheckboxChange}
+          singleInvoiceData={singleInvoiceData}
+          setInvoiceId={setInvoiceId}
+          isLoadingSingleInvoiceData={isLoadingSingleInvoiceData}
+          setSingleInvoiceData={setSingleInvoiceData}
+          handleUpdateInvoice={handleUpdateInvoice}
+          isUpdatingInvoice={isUpdatingInvoice}
         />
 
         <hr className="border-neutral-400" />
