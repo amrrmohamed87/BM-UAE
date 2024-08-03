@@ -7,7 +7,7 @@ import {
 
 const Pagination = ({
   rowsPerPage,
-  handleRowsPerPage,
+  setRowsPerPage,
   currentPage,
   totalPages,
   setCurrentPage,
@@ -18,7 +18,10 @@ const Pagination = ({
       <input
         type="number"
         value={rowsPerPage}
-        onChange={handleRowsPerPage}
+        onChange={(event) => {
+          setRowsPerPage(event.target.value);
+          setCurrentPage(1);
+        }}
         className="w-10 pl-3 border rounded-md shadow"
       />
     </div>
