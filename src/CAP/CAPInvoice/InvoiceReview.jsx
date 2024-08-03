@@ -33,6 +33,7 @@ import Filter from "@/components/Filter";
 import Select from "react-select";
 import CAPInvoiceTable from "@/tables/CAPInvoiceTable";
 import Pagination from "@/components/Pagination";
+import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
 
 export function InvoiceReview() {
   //? Custome hook for Invoices Review
@@ -67,6 +68,22 @@ export function InvoiceReview() {
     uniqueStatusQueue,
     setUniqueStatusQueue,
   } = useCAPInvoice("invoicesReview");
+
+  //Sending data to api
+  const handleArchiveOrDelete = async (endPoint, setIsLoadingState) => {
+    const invoiceIds = {
+      ids: selectedRows.map((row) => row.id),
+    };
+
+    await handleArchiveRestoreOrDeleteData(
+      invoiceIds,
+      endPoint,
+      setIsLoadingState,
+      setReloadTable,
+      reloadTable,
+      setSelectedRows
+    );
+  };
 
   //Filter functions
   const filteredInvoices = capInvoices.filter(
@@ -211,7 +228,16 @@ export function InvoiceReview() {
                     Cancel
                   </AlertDialogCancel>
                   <form method="delete">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction
+                      onClick={() => {
+                        handleArchiveOrDelete(
+                          "https://benchmark-innovation-production.up.railway.app/api/cap-invoice/soft",
+                          setIsArchivingInvoice
+                        );
+                      }}
+                    >
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -252,7 +278,16 @@ export function InvoiceReview() {
                     Cancel
                   </AlertDialogCancel>
                   <form method="delete">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction
+                      onClick={() =>
+                        handleArchiveOrDelete(
+                          "https://benchmark-innovation-production.up.railway.app/api/cap-invoice",
+                          setIsDeletingInvoice
+                        )
+                      }
+                    >
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
