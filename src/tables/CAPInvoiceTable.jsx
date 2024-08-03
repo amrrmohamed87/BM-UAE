@@ -345,13 +345,6 @@ export const CAPInvoiceTable = ({
                               </div>
                             )
                           )}
-                          <DialogFooter>
-                            <form method="patch">
-                              <button className="px-5 py-2 bg-blue-900 rounded-md text-white transition-all duration-300 hover:bg-blue-500">
-                                Save Changes
-                              </button>
-                            </form>
-                          </DialogFooter>
                         </DialogContent>
                       </Dialog>
                       {!invoice.isDeleted && (
