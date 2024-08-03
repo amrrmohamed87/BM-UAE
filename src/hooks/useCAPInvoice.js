@@ -214,6 +214,19 @@ export const useCAPInvoice = (pageType) => {
         isLoadingArchivedInvoices,
         isRestoringInvoice,
         setIsRestoringInvoice,
+        //?----------------
+        uniqueArchivedCustomerNameOptions,
+        uniqueArchivedCustomerNameQueue,
+        setUniqueArchivedCustomerNameQueue,
+        uniqueArchivedCAPIDOptions,
+        uniqueArchivedCAPIDQueue,
+        setUniqueArchivedCAPIDQueue,
+        uniqueArchivedCapInvoiceNoOptions,
+        uniqueArchivedCapInvoiceNoQueue,
+        setUniqueArchivedCapInvoiceNoQueue,
+        uniqueArchivedStatusOptions,
+        uniqueArchivedStatusQueue,
+        setUniqueArchivedStatusQueue
     }
 
 }
