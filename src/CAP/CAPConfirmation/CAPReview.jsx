@@ -508,26 +508,26 @@ export function CAPReview() {
           handleCheckboxChange={handleCheckboxChange}
           formatDate={date}
         />
-      </div>
 
-      <hr className="border-neutral-400" />
+        <hr className="border-neutral-400" />
 
-      <div className="flex flex-col justify-center gap-3 md:flex-row md:justify-between items-center mt-4 md:mt-2">
-        <div className="flex items-center gap-2">
-          <input
-            value={selectedRows.length}
-            onChange={(event) => event.target.value}
-            className="w-10 pl-3 border rounded-md shadow"
+        <div className="flex flex-col justify-center gap-3 md:flex-row md:justify-between items-center mt-4 md:mt-2">
+          <div className="flex items-center gap-2">
+            <input
+              value={selectedRows.length}
+              onChange={(event) => event.target.value}
+              className="w-10 pl-3 border rounded-md shadow"
+            />
+            <p className="">row selected</p>
+          </div>
+          <Pagination
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
           />
-          <p className="">row selected</p>
         </div>
-        <Pagination
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          setCurrentPage={setCurrentPage}
-        />
       </div>
 
       <h1 className="text-center text-sm text-neutral-400">
