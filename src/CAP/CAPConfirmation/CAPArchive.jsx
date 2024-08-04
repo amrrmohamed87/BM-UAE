@@ -30,6 +30,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import CAPOrdersTable from "@/tables/CAPOrdersTable";
+import Pagination from "@/components/Pagination";
+import Filter from "@/components/Filter";
+import Select from "react-select";
+import { handleArchiveRestoreOrDeleteData } from "@/utils/ARDDate";
 
 export function CAPArchive() {
   //? Custom Hook for CAP Confirmation Orders
@@ -65,6 +70,21 @@ export function CAPArchive() {
     currentPage,
     setCurrentPage,
   } = useCAPConfirmation("archivedOrders");
+
+  const handleRestoreOrDeletePFIs = async (endPoint, setIsLoadingState) => {
+    const orderId = {
+      ids: selectedRows.map((row) => row.id),
+    };
+
+    await handleArchiveRestoreOrDeleteData(
+      orderId,
+      endPoint,
+      setIsLoadingState,
+      setReloadTable,
+      reloadTable,
+      setSelectedRows
+    );
+  };
 
   const filteredOrders = archivedOrders.filter(
     (order) =>
@@ -106,11 +126,6 @@ export function CAPArchive() {
         return prevRows.filter((row) => row !== order);
       }
     });
-  }
-
-  function handleRowsPerPage(event) {
-    setRowsPerPage(event.target.value);
-    setCurrentPage(1);
   }
 
   return (
@@ -195,7 +210,7 @@ export function CAPArchive() {
                       <Loader className="text-white" />
                     </motion.div>
                   ) : (
-                    "restore"
+                    "Restore"
                   )}
                 </button>
               </AlertDialogTrigger>
@@ -203,7 +218,8 @@ export function CAPArchive() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will restore those PFIs.
+                    This action cannot be undone. This will restore those
+                    Orders.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -211,7 +227,16 @@ export function CAPArchive() {
                     Cancel
                   </AlertDialogCancel>
                   <form method="delete">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction
+                      onClick={() => {
+                        handleRestoreOrDeletePFIs(
+                          "https://benchmark-innovation-production.up.railway.app/api/cap-confirmation/soft",
+                          setIsRestoringOrder
+                        );
+                      }}
+                    >
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -243,7 +268,7 @@ export function CAPArchive() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will restore those PFIs.
+                    This action cannot be undone. This will delete those Orders.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -251,7 +276,16 @@ export function CAPArchive() {
                     Cancel
                   </AlertDialogCancel>
                   <form method="delete">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction
+                      onClick={() => {
+                        handleArchiveOrDeletePFIs(
+                          "https://benchmark-innovation-production.up.railway.app/api/cap-confirmation",
+                          setIsDeletingOrder
+                        );
+                      }}
+                    >
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -294,6 +328,35 @@ export function CAPArchive() {
             </Filter>
           )}
         </AnimatePresence>
+
+        <CAPOrdersTable
+          isLoadingState={isLoadingArchivedOrders}
+          fetchedData={archivedOrders}
+          currentData={currentData}
+          selectedRows={selectedRows}
+          handleCheckboxChange={handleCheckboxChange}
+          formatDate={date}
+        />
+
+        <hr className="border-neutral-400" />
+
+        <div className="flex flex-col justify-center gap-3 md:flex-row md:justify-between items-center mt-4 md:mt-2">
+          <div className="flex items-center gap-2">
+            <input
+              value={selectedRows.length}
+              onChange={(event) => event.target.value}
+              className="w-10 pl-3 border rounded-md shadow"
+            />
+            <p className="">row selected</p>
+          </div>
+          <Pagination
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
       </div>
       <h1 className="text-center text-sm text-neutral-400">
         @2024 ApexBuild, Benchmark - All rights reserved
