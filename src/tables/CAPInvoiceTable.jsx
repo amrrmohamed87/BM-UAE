@@ -229,16 +229,48 @@ export const CAPInvoiceTable = ({
                             singleInvoiceData.CAPOrder &&
                             singleInvoiceData.CAPOrder.PO &&
                             singleInvoiceData.CAPOrder.PO.PFI && (
-                              <div className="flex flex-col gap-3 h-[500px] md:h-[600px] md:max-h-[600px] lg:h-[800px] lg:max-h-[800px] overflow-y-auto">
+                              <div className="flex flex-col gap-3 h-[500px] md:h-[600px] md:max-h-[600px] lg:h-[620px] lg:max-h-[650px] 2xl:h-[800px] xl:max-h-[800px] overflow-y-auto">
                                 <h1 className="text-xl md:text-[22px] font-semibold">
                                   Orders Information
                                 </h1>
+                                <h1 className="text-center font-semibold">
+                                  CAP Order Confirmation Number:{" "}
+                                  <span className="text-neutral-700 font-normal">
+                                    {
+                                      singleInvoiceData.CAPOrder
+                                        .orderConfirmationNo
+                                    }
+                                  </span>
+                                </h1>
+
+                                <div className="flex flex-col justify-start md:flex-row md:justify-center gap-2">
+                                  <h1 className="font-semibold">
+                                    CAP Invoice Number:{" "}
+                                    <span className="text-neutral-700 font-normal">
+                                      {singleInvoiceData.capInvoiceNo}
+                                    </span>
+                                  </h1>
+                                  <h1 className="font-semibold">
+                                    Swift Number:{" "}
+                                    <span className="text-neutral-700 font-normal">
+                                      {singleInvoiceData.swiftNo
+                                        ? singleInvoiceData.swiftNo
+                                        : "####"}
+                                    </span>
+                                  </h1>
+                                  <h1 className="font-semibold">
+                                    Status:{" "}
+                                    <span className="text-neutral-700 font-normal">
+                                      {singleInvoiceData.status}
+                                    </span>
+                                  </h1>
+                                </div>
                                 <div className=" grid grid-cols-1 md:grid-cols-2 gap-8 place-content-center">
                                   {singleInvoiceData.CAPOrder.PO.PFI.map(
                                     (pfi, index) => (
                                       <div
                                         key={index}
-                                        className="bg-gray-200 p-4 grid grid-cols-1 gap-2"
+                                        className="bg-gray-100 rounded-lg shadow-md border p-5 grid grid-cols-1 gap-2"
                                       >
                                         <h1 className="font-semibold">
                                           Customer Name:{" "}
@@ -308,39 +340,6 @@ export const CAPInvoiceTable = ({
 
                                 <div className="flex justify-center">
                                   <hr className="border w-1/2" />
-                                </div>
-
-                                <h1 className="text-center font-semibold">
-                                  CAP Order Confirmation Number:{" "}
-                                  <span className="text-neutral-700 font-normal">
-                                    {
-                                      singleInvoiceData.CAPOrder
-                                        .orderConfirmationNo
-                                    }
-                                  </span>
-                                </h1>
-
-                                <div className="flex flex-col justify-start md:flex-row md:justify-center gap-2">
-                                  <h1 className="font-semibold">
-                                    CAP Invoice Number:{" "}
-                                    <span className="text-neutral-700 font-normal">
-                                      {singleInvoiceData.capInvoiceNo}
-                                    </span>
-                                  </h1>
-                                  <h1 className="font-semibold">
-                                    Swift Number:{" "}
-                                    <span className="text-neutral-700 font-normal">
-                                      {singleInvoiceData.swiftNo
-                                        ? singleInvoiceData.swiftNo
-                                        : "####"}
-                                    </span>
-                                  </h1>
-                                  <h1 className="font-semibold">
-                                    Status:{" "}
-                                    <span className="text-neutral-700 font-normal">
-                                      {singleInvoiceData.status}
-                                    </span>
-                                  </h1>
                                 </div>
                               </div>
                             )
