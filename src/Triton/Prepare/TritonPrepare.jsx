@@ -3,7 +3,7 @@ import { useTritonPrepare } from "@/hooks/useTritonPrepare";
 import { PageHeader } from "@/components/PageHeader";
 import { ToastContainer, toast } from "react-toastify";
 import TritonPrepareForm from "@/forms/TritonPrepareForm";
-import { BoxIcon, ChevronDown, ListChecks, Search } from "lucide-react";
+import { BoxIcon, ChevronDown, ListChecks, Loader, Search } from "lucide-react";
 
 import {
   AlertDialog,
@@ -19,6 +19,7 @@ import {
 import Select from "react-select";
 import TritonTable from "@/tables/TritonTable";
 import Pagination from "@/components/Pagination";
+import { useMemo } from "react";
 
 export function TritonPrepare() {
   //? useTritonPrepare Hook
@@ -47,23 +48,28 @@ export function TritonPrepare() {
     setReloadTable,
   } = useTritonPrepare();
 
-  const filteredData =
-    plannedSHPDateItems.length > 0 &&
-    plannedSHPDateItems.filter(
-      (order) =>
-        !uniqueDateQueue ||
-        order.CAPOrder.PO.PFI.some((pfi) =>
-          pfi.PFIItems.some((item) =>
-            item.Items?.Cycles.some(
-              (cycle) => date(cycle.SHPDate) === uniqueDateQueue
+  const filteredData = useMemo(() => {
+    return (
+      plannedSHPDateItems.length > 0 &&
+      plannedSHPDateItems.filter(
+        (order) =>
+          !uniqueDateQueue ||
+          order.CAPOrder.PO.PFI.some((pfi) =>
+            pfi.PFIItems.some((item) =>
+              item.Items?.Cycles.some(
+                (cycle) => date(cycle.SHPDate) === uniqueDateQueue
+              )
             )
           )
-        )
+      )
     );
+  }, [plannedSHPDateItems, uniqueDateQueue]);
 
-  const totalPages = Math.ceil(
-    filteredData.length > 0 && filteredData.length / rowsPerPage
-  );
+  const totalPages = useMemo(() => {
+    return Math.ceil(
+      filteredData.length > 0 && filteredData.length / rowsPerPage
+    );
+  }, [filteredData, rowsPerPage]);
 
   const currentData =
     filteredData.length > 0 &&
@@ -72,17 +78,38 @@ export function TritonPrepare() {
       currentPage * rowsPerPage
     );
 
-  function handleCheckboxChange(event, pfi) {
+  function handleCheckboxChange(event, order) {
     const isChecked = event.target.checked;
 
     setSelectedRows((prevRows) => {
       if (isChecked) {
-        return [...prevRows, pfi];
+        return [...prevRows, order];
       } else {
-        return prevRows.filter((row) => row !== pfi);
+        return prevRows.filter((row) => row !== order);
       }
     });
   }
+
+  const data =
+    selectedRows.length > 0 &&
+    selectedRows.flatMap((order) =>
+      order.CAPOrder.PO.PFI.flatMap((pfi) =>
+        pfi.PFIItems.map((item) => ({
+          itemId: item.Items?.id || "",
+          unit:
+            item.Items?.Cycles.map((cycle) => ({
+              label: cycle.label,
+              SHPDate: date(cycle.SHPDate),
+            })) || [],
+          customerId: pfi.Customer.id,
+          AWB: "",
+          kitNo: "",
+          basicUnitPrice: "",
+        }))
+      )
+    );
+
+  console.log(data);
 
   const handleSaveTriton = async () => {
     setIsSavingOrder(true);
@@ -91,12 +118,12 @@ export function TritonPrepare() {
       selectedRows.flatMap((order) =>
         order.CAPOrder.PO.PFI.flatMap((pfi) =>
           pfi.PFIItems.map((item) => ({
-            itemId: item.Items?.id || "",
-            unit: item.Items?.Cycles || [],
+            itemId: item.Items?.id,
+            unit: item.Items?.Cycles,
             customerId: pfi.Customer.id,
-            AWB: "",
-            kitNo: "",
-            basicUnitPrice: "",
+            AWB: 0,
+            kitNo: 0,
+            basicUnitPrice: 0,
           }))
         )
       );
@@ -113,6 +140,8 @@ export function TritonPrepare() {
         }
       );
       const resData = await response.json();
+
+      console.log(resData.message);
 
       if (!response.ok) {
         toast.error(resData.message);
@@ -201,7 +230,9 @@ export function TritonPrepare() {
                     Cancel
                   </AlertDialogCancel>
                   <form method="post">
-                    <AlertDialogAction>Confirm</AlertDialogAction>
+                    <AlertDialogAction onClick={handleSaveTriton}>
+                      Confirm
+                    </AlertDialogAction>
                   </form>
                 </AlertDialogFooter>
               </AlertDialogContent>
